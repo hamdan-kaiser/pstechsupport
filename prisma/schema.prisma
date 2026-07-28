@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  password      String
+  role          String   @default("employee")
+  shift         String   @default("day")
+  magicKey      String   @default("0000")
+  totalHolidays Int      @default(28)
+  usedHolidays  Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  holidayRequests  HolidayRequest[]
+  statsRecords     StatsRecord[]
+  timetableEntries TimetableEntry[]
+  swapRequestsFrom ShiftSwap[]      @relation("SwapFrom")
+  swapRequestsTo   ShiftSwap[]      @relation("SwapTo")
+  notifications    Notification[]
+}
+
+model HolidayRequest {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startDate DateTime
+  endDate   DateTime
+  days      Int
+  reason    String
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model StatsRecord {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  month         Int
+  year          Int
+  casesCreated  Int      @default(0)
+  casesResolved Int      @default(0)
+  inboundCalls  Int      @default(0)
+  outboundCalls Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([userId, month, year])
+}
+
+model TimetableEntry {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weekStart DateTime
+  monday    String?
+  tuesday   String?
+  wednesday String?
+  thursday  String?
+  friday    String?
+  saturday  String?
+  sunday    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, weekStart])
+}
+
+model ShiftSwap {
+  id                String   @id @default(cuid())
+  requesterId       String
+  requester         User     @relation("SwapFrom", fields: [requesterId], references: [id], onDelete: Cascade)
+  targetId          String
+  target            User     @relation("SwapTo", fields: [targetId], references: [id], onDelete: Cascade)
+  swapDate          DateTime
+  requesterShift    String
+  targetShift       String
+  targetAccepted    Boolean  @default(false)
+  adminApproved     String   @default("pending")
+  status            String   @default("pending")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String   @default("info")
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

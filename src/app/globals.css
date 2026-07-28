@@ -1,0 +1,183 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─────────────────────────────────────────
+   CSS VARIABLES — Dark (default)
+───────────────────────────────────────── */
+:root {
+  --sidebar-width: 260px;
+
+  --bg-base:        #020617;   /* slate-950 */
+  --bg-surface:     #0f172a;   /* slate-900 */
+  --bg-elevated:    #1e293b;   /* slate-800 */
+  --bg-hover:       #334155;   /* slate-700 */
+
+  --border-base:    #1e293b;   /* slate-800 */
+  --border-subtle:  #334155;   /* slate-700 */
+
+  --text-primary:   #f1f5f9;   /* slate-100 */
+  --text-secondary: #94a3b8;   /* slate-400 */
+  --text-muted:     #64748b;   /* slate-500 */
+  --text-faint:     #334155;   /* slate-700 */
+
+  --brand:          #2563eb;
+  --brand-hover:    #1d4ed8;
+  --brand-subtle:   rgba(37,99,235,0.15);
+  --brand-text:     #60a5fa;
+}
+
+/* ─────────────────────────────────────────
+   CSS VARIABLES — Light
+───────────────────────────────────────── */
+html.light {
+  --bg-base:        #f1f5f9;   /* slate-100 */
+  --bg-surface:     #ffffff;
+  --bg-elevated:    #f8fafc;   /* slate-50 */
+  --bg-hover:       #e2e8f0;   /* slate-200 */
+
+  --border-base:    #e2e8f0;
+  --border-subtle:  #cbd5e1;   /* slate-300 */
+
+  --text-primary:   #0f172a;   /* slate-900 */
+  --text-secondary: #475569;   /* slate-600 */
+  --text-muted:     #64748b;   /* slate-500 */
+  --text-faint:     #cbd5e1;   /* slate-300 */
+
+  --brand:          #2563eb;
+  --brand-hover:    #1d4ed8;
+  --brand-subtle:   rgba(37,99,235,0.08);
+  --brand-text:     #2563eb;
+}
+
+/* ─────────────────────────────────────────
+   BASE
+───────────────────────────────────────── */
+@layer base {
+  body {
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    @apply antialiased transition-colors duration-300;
+  }
+  * {
+    border-color: var(--border-base);
+    transition: background-color 0.3s, border-color 0.3s, color 0.2s;
+  }
+}
+
+/* ─────────────────────────────────────────
+   COMPONENT CLASSES
+───────────────────────────────────────── */
+@layer components {
+
+  .card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-base);
+    @apply rounded-2xl p-6;
+  }
+
+  .surface {
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    @apply rounded-xl;
+  }
+
+  .btn-primary {
+    background-color: var(--brand);
+    @apply text-white font-medium px-4 py-2 rounded-xl transition-all duration-200
+           disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90;
+  }
+
+  .btn-secondary {
+    background-color: var(--bg-elevated);
+    color: var(--text-primary);
+    border: 1px solid var(--border-subtle);
+    @apply font-medium px-4 py-2 rounded-xl transition-all duration-200 hover:opacity-80;
+  }
+
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-xl transition-all duration-200;
+  }
+
+  .btn-success {
+    @apply bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 rounded-xl transition-all duration-200;
+  }
+
+  .input {
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    @apply rounded-xl px-4 py-2.5 w-full focus:outline-none focus:ring-2
+           focus:ring-blue-500 focus:border-transparent transition-all duration-200;
+  }
+  .input::placeholder { color: var(--text-muted); }
+
+  .label {
+    color: var(--text-secondary);
+    @apply text-sm font-medium mb-1.5 block;
+  }
+
+  .t-primary   { color: var(--text-primary); }
+  .t-secondary { color: var(--text-secondary); }
+  .t-muted     { color: var(--text-muted); }
+  .t-brand     { color: var(--brand-text); }
+
+  .bg-base     { background-color: var(--bg-base); }
+  .bg-surface  { background-color: var(--bg-surface); }
+  .bg-elevated { background-color: var(--bg-elevated); }
+
+  .badge-pending  { @apply bg-amber-500/20  text-amber-400  text-xs font-medium px-2.5 py-1 rounded-full; }
+  .badge-approved { @apply bg-emerald-500/20 text-emerald-400 text-xs font-medium px-2.5 py-1 rounded-full; }
+  .badge-rejected { @apply bg-red-500/20    text-red-400    text-xs font-medium px-2.5 py-1 rounded-full; }
+  .badge-day      { @apply bg-amber-500/20  text-amber-300  text-xs font-medium px-2.5 py-1 rounded-full; }
+  .badge-night    { @apply bg-indigo-500/20 text-indigo-300 text-xs font-medium px-2.5 py-1 rounded-full; }
+}
+
+/* ─────────────────────────────────────────
+   SIDEBAR LINKS
+───────────────────────────────────────── */
+.sidebar-link {
+  color: var(--text-secondary);
+  @apply flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-sm font-medium;
+}
+.sidebar-link:hover {
+  background-color: var(--bg-elevated);
+  color: var(--text-primary);
+}
+.sidebar-link.active {
+  background-color: var(--brand-subtle);
+  color: var(--brand-text);
+  border: 1px solid rgba(37,99,235,0.25);
+}
+
+/* ─────────────────────────────────────────
+   SCROLLBAR
+───────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background-color: var(--bg-base); }
+::-webkit-scrollbar-thumb { background-color: var(--bg-hover); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background-color: var(--text-muted); }
+
+/* ─────────────────────────────────────────
+   ANIMATIONS
+───────────────────────────────────────── */
+@keyframes fadeIn  { from { opacity: 0 } to { opacity: 1 } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px) } to { opacity: 1; transform: translateY(0) } }
+.animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+.animate-slide-up { animation: slideUp 0.4s ease-out; }
+
+/* ─────────────────────────────────────────
+   GLOW CREDIT
+───────────────────────────────────────── */
+@keyframes glowPulse {
+  0%, 100% { text-shadow: 0 0 6px rgba(34,211,238,0.4), 0 0 12px rgba(34,211,238,0.2); opacity: 0.6; }
+  50%       { text-shadow: 0 0 12px rgba(34,211,238,0.9), 0 0 28px rgba(34,211,238,0.5), 0 0 48px rgba(34,211,238,0.2); opacity: 1; }
+}
+.glow-credit {
+  animation: glowPulse 3s ease-in-out infinite;
+  color: #22d3ee;
+  font-family: monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
