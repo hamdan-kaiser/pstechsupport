@@ -33,16 +33,7 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000)
 
 ## Default Logins
-
-| Role     | Email                    | Password      |
-|----------|--------------------------|---------------|
-| Admin    | admin@company.com        | password123   |
-| Employee | imran@company.com        | password123   |
-| Employee | nasrumul@company.com     | password123   |
-| Employee | sarah@company.com        | password123   |
-| Employee | mohammed@company.com     | password123   |
-| Employee | priya@company.com        | password123   |
-| Employee | james@company.com        | password123   |
+***Confidential***
 
 ## Excel Timetable Format
 
@@ -50,30 +41,10 @@ Upload `.xlsx` files with this column structure:
 
 | Name          | Mon        | Tue        | Wed | Thu        | Fri        | Sat | Sun |
 |---------------|------------|------------|-----|------------|------------|-----|-----|
-| Imran Ahmed   | Day Shift  | Day Shift  | OFF | Day Shift  | Day Shift  | OFF | OFF |
-| Nasrumul Islam| Night Shift| Night Shift| OFF | Night Shift| Night Shift| OFF | OFF |
+
 
 Cell values: `Day Shift`, `Night Shift`, or `OFF`
 
-## Deploy to Vercel
-
-1. Push this repo to GitHub
-2. Go to [vercel.com](https://vercel.com) → New Project → Import your repo
-3. Add environment variables:
-   - `DATABASE_URL` — Use a hosted DB like [Turso](https://turso.tech) (SQLite-compatible) or switch to PostgreSQL
-   - `NEXTAUTH_SECRET` — Any random string (run `openssl rand -base64 32`)
-   - `NEXTAUTH_URL` — Your Vercel deployment URL
-
-### Switching to PostgreSQL for Vercel
-
-In `prisma/schema.prisma`, change:
-```prisma
-datasource db {
-  provider = "postgresql"   // was "sqlite"
-  url      = env("DATABASE_URL")
-}
-```
-Then use a free [Neon](https://neon.tech) or [Supabase](https://supabase.com) PostgreSQL database.
 
 ## Shift Swap Flow
 
