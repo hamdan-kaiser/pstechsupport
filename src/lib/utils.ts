@@ -35,6 +35,19 @@ export const SHIFT_TIMES = {
 export const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const
 export const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
+/** Maps JS Date.getDay() (0=Sunday) to the timetable's day-of-week field name */
+export const JS_DAY_KEYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const
+export function getTodayDayKey(): typeof JS_DAY_KEYS[number] {
+  return JS_DAY_KEYS[new Date().getDay()]
+}
+
+/** Splits a shift value like "8am (08:00-16:00)" into a short label and a readable time range */
+export function splitShiftValue(val: string): { label: string; time: string | null } {
+  const match = val.match(/^(.*?)\s*\(([^)]+)\)\s*$/)
+  if (match) return { label: match[1].trim(), time: match[2].replace('-', ' – ') }
+  return { label: val, time: null }
+}
+
 // ─── Shared style helpers ───────────────────────────────────────────────────
 
 /** Tailwind classes for a shift/timetable cell value */

@@ -7,6 +7,7 @@ import { getWeekStart } from '@/lib/utils'
 export default async function TimetablePage() {
   const session = await getServerSession(authOptions)
   const role = (session!.user as any).role
+  const currentUserId = (session!.user as any).id
   const weekStart = getWeekStart()
 
   const [entries, employees] = await Promise.all([
@@ -20,5 +21,5 @@ export default async function TimetablePage() {
       : [],
   ])
 
-  return <TimetableClient entries={entries} employees={employees} role={role} weekStart={weekStart.toISOString()} />
+  return <TimetableClient entries={entries} employees={employees} role={role} weekStart={weekStart.toISOString()} currentUserId={currentUserId} />
 }

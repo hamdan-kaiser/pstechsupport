@@ -95,10 +95,9 @@ export function EmployeesClient({ employees: initial }: { employees: any[] }) {
       Shift: e.shift,
       'Total Holidays': e.totalHolidays,
       'Used Holidays': e.usedHolidays,
-      'Joined': formatDate(e.createdAt),
     }))
     const ws = XLSX.utils.json_to_sheet(rows)
-    ws['!cols'] = [{ wch: 24 }, { wch: 30 }, { wch: 12 }, { wch: 12 }, { wch: 16 }, { wch: 14 }, { wch: 14 }]
+    ws['!cols'] = [{ wch: 24 }, { wch: 30 }, { wch: 12 }, { wch: 12 }, { wch: 16 }, { wch: 14 }]
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Employees')
     XLSX.writeFile(wb, 'employees.xlsx')
@@ -243,7 +242,7 @@ export function EmployeesClient({ employees: initial }: { employees: any[] }) {
         <table className="w-full text-sm min-w-[700px]">
           <thead>
             <tr className="border-b" style={{ borderColor: 'var(--border-base)' }}>
-              {['Employee', 'Email', 'Role', 'Shift', 'Holidays', 'Magic Key', 'Joined', 'Actions'].map(h => (
+              {['Employee', 'Email', 'Role', 'Shift', 'Holidays', 'Magic Key', 'Actions'].map(h => (
                 <th key={h} className="text-left py-3 px-4 font-medium" style={{ color: 'var(--text-secondary)' }}>{h}</th>
               ))}
             </tr>
@@ -284,7 +283,6 @@ export function EmployeesClient({ employees: initial }: { employees: any[] }) {
                     <KeyRound className="w-3 h-3" />{emp.magicKey || '—'}
                   </span>
                 </td>
-                <td className="py-3 px-4 text-xs" style={{ color: 'var(--text-muted)' }}>{formatDate(emp.createdAt)}</td>
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-2">
                     <button onClick={() => openEdit(emp)} className="p-1.5 rounded-lg transition-colors" style={{ color: 'var(--text-muted)' }}

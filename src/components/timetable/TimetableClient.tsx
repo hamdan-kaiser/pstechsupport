@@ -6,9 +6,9 @@ import * as XLSX from 'xlsx'
 import { Clock, Upload, Download, Sun, Moon, ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn, DAYS, DAY_LABELS, getWeekStart, shiftStyle, shiftBadge, avatarColor } from '@/lib/utils'
 
-interface Props { entries: any[]; employees: any[]; role: string; weekStart: string }
+interface Props { entries: any[]; employees: any[]; role: string; weekStart: string; currentUserId: string }
 
-export function TimetableClient({ entries: initial, employees, role, weekStart: initialWeek }: Props) {
+export function TimetableClient({ entries: initial, employees, role, weekStart: initialWeek, currentUserId }: Props) {
   const [entries, setEntries] = useState(initial)
   const [weekStart, setWeekStart] = useState(new Date(initialWeek))
   const [uploading, setUploading] = useState(false)
@@ -174,17 +174,22 @@ export function TimetableClient({ entries: initial, employees, role, weekStart: 
               </tr>
             </thead>
             <tbody>
-              {entries.map((entry, i) => (
-                <tr key={entry.id ?? i} className="tt-row border-b transition-colors" style={{ borderColor: 'var(--border-base)' }}
-                  onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--bg-elevated)')}
-                  onMouseLeave={e => (e.currentTarget.style.backgroundColor = '')}>
+              {entries.map((entry, i) => {
+                const isMe = entry.userId === currentUserId
+                return (
+                <tr key={entry.id ?? i} className={cn('tt-row border-b transition-colors', isMe && 'my-row')} style={{ borderColor: 'var(--border-base)' }}
+                  onMouseEnter={e => { if (!isMe) e.currentTarget.style.backgroundColor = 'var(--bg-elevated)' }}
+                  onMouseLeave={e => { if (!isMe) e.currentTarget.style.backgroundColor = '' }}>
                   <td className="py-4 px-4">
                     <div className="flex items-center gap-3">
                       <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0', avatarColor(entry.user?.name ?? ''))}>
                         {entry.user?.name?.charAt(0)}
                       </div>
                       <div>
-                        <p className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>{entry.user?.name}</p>
+                        <p className="font-medium text-sm flex items-center gap-1.5" style={{ color: 'var(--text-primary)' }}>
+                          {entry.user?.name}
+                          {isMe && <span className="text-xs font-semibold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: 'var(--brand)', color: 'white' }}>You</span>}
+                        </p>
                         <div className="flex items-center gap-1 mt-0.5">
                           {entry.user?.shift === 'day'
                             ? <><Sun className="w-3 h-3 text-amber-400" /><span className="text-xs text-amber-400">Day</span></>
@@ -206,7 +211,7 @@ export function TimetableClient({ entries: initial, employees, role, weekStart: 
                     </td>
                   ))}
                 </tr>
-              ))}
+              )})}
             </tbody>
           </table>
         )}

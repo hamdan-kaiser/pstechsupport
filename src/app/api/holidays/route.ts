@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { createNotification, notifyAllAdmins } from '@/lib/notifications'
 import { diffDays } from '@/lib/utils'
+import { getUsedHolidayDays } from '@/lib/holidayUsage'
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -32,7 +33,8 @@ export async function POST(req: Request) {
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
   const days = diffDays(new Date(startDate), new Date(endDate))
-  const remaining = user.totalHolidays - user.usedHolidays
+  const usedHolidays = await getUsedHolidayDays(userId)
+  const remaining = user.totalHolidays - usedHolidays
   if (days > remaining) return NextResponse.json({ error: `Only ${remaining} days remaining` }, { status: 400 })
 
   const request = await prisma.holidayRequest.create({

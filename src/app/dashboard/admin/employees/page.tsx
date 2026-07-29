@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { EmployeesClient } from '@/components/admin/EmployeesClient'
 import { getWeekStart, deriveShiftPeriod } from '@/lib/utils'
+import { getUsedHolidayDaysForUsers } from '@/lib/holidayUsage'
 
 const JS_DAY_KEYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const
 
@@ -16,16 +17,18 @@ export default async function EmployeesPage() {
 
   const [employees, timetableEntries] = await Promise.all([
     prisma.user.findMany({
-      select: { id: true, name: true, email: true, role: true, shift: true, magicKey: true, totalHolidays: true, usedHolidays: true, createdAt: true },
+      select: { id: true, name: true, email: true, role: true, shift: true, magicKey: true, totalHolidays: true, usedHolidays: true },
       orderBy: { name: 'asc' },
     }),
     prisma.timetableEntry.findMany({ where: { weekStart } }),
   ])
 
+  const usedHolidaysByUser = await getUsedHolidayDaysForUsers(employees.map(e => e.id))
+
   const employeesWithTodayShift = employees.map(emp => {
     const entry = timetableEntries.find(t => t.userId === emp.id) as any
     const todayValue = entry ? entry[todayKey] : null
-    return { ...emp, todayShift: deriveShiftPeriod(todayValue) ?? emp.shift }
+    return { ...emp, usedHolidays: usedHolidaysByUser[emp.id] ?? 0, todayShift: deriveShiftPeriod(todayValue) ?? emp.shift }
   })
 
   return <EmployeesClient employees={employeesWithTodayShift} />

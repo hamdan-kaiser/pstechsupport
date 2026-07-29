@@ -171,6 +171,18 @@ html.light {
 .animate-slide-up { animation: slideUp 0.4s ease-out; }
 
 /* ─────────────────────────────────────────
+   TIMETABLE — "this is you" row highlight
+───────────────────────────────────────── */
+@keyframes rowGlow {
+  0%, 100% { box-shadow: inset 0 0 0 1px var(--brand), 0 0 10px rgba(37,99,235,0.35); }
+  50%      { box-shadow: inset 0 0 0 1px var(--brand), 0 0 20px rgba(37,99,235,0.65); }
+}
+.my-row {
+  animation: rowGlow 2.4s ease-in-out infinite;
+  background-color: var(--brand-subtle) !important;
+}
+
+/* ─────────────────────────────────────────
    GLOW CREDIT
 ───────────────────────────────────────── */
 @keyframes glowPulse {

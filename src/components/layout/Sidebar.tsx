@@ -6,7 +6,7 @@ import { gsap } from 'gsap'
 import { useEffect, useRef } from 'react'
 import {
   LayoutDashboard, CalendarDays, BarChart3, Clock, ArrowLeftRight,
-  Users, Settings, LogOut, Shield, Thermometer,
+  Users, LogOut, Shield, Thermometer, Brain,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -17,6 +17,7 @@ const employeeLinks = [
   { href: '/dashboard/stats', label: 'My Stats', icon: BarChart3 },
   { href: '/dashboard/timetable', label: 'Timetable', icon: Clock },
   { href: '/dashboard/shift-swap', label: 'Shift Swap', icon: ArrowLeftRight },
+  { href: '/dashboard/iq-test', label: 'Getting bored?', icon: Brain },
 ]
 
 const adminLinks = [
@@ -27,7 +28,7 @@ const adminLinks = [
   { href: '/dashboard/timetable', label: 'Timetable', icon: Clock },
   { href: '/dashboard/shift-swap', label: 'Shift Swap', icon: ArrowLeftRight },
   { href: '/dashboard/admin/employees', label: 'Employees', icon: Users },
-  { href: '/dashboard/admin/settings', label: 'Settings', icon: Settings },
+  { href: '/dashboard/iq-test', label: 'Getting bored?', icon: Brain },
 ]
 
 export function Sidebar({ role }: { role: string }) {

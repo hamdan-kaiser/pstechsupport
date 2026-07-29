@@ -27,6 +27,18 @@ model User {
   swapRequestsFrom ShiftSwap[]      @relation("SwapFrom")
   swapRequestsTo   ShiftSwap[]      @relation("SwapTo")
   notifications    Notification[]
+  iqGameScore      IqGameScore?
+}
+
+model IqGameScore {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bestScore    Int      @default(0) // correct answers out of 20, best attempt
+  bestTimeMs   Int      @default(0) // total time taken on the best-scoring attempt (tiebreaker)
+  attempts     Int      @default(0)
+  lastPlayedAt DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model HolidayRequest {

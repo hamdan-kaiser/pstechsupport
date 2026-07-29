@@ -43,10 +43,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   await prisma.holidayRequest.update({ where: { id: params.id }, data: { status } })
 
   if (status === 'approved') {
-    await prisma.user.update({
-      where: { id: holiday.userId },
-      data: { usedHolidays: { increment: holiday.days } },
-    })
+    // Holidays used is derived from actual "Holiday" timetable entries (see lib/holidayUsage),
+    // so approval only needs to write the timetable — not a separate counter that can drift.
     await markTimetableRange(holiday.userId, holiday.startDate, holiday.endDate, 'Holiday')
   }
 
