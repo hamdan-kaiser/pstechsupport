@@ -5,6 +5,7 @@ import { CalendarDays, ArrowLeftRight, Sun, Moon, Clock } from 'lucide-react'
 import { formatDate, DAY_LABELS, DAYS, shiftStyle, shiftBadge, avatarColor } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
+import { AnimatedNumber } from '@/components/ui/AnimatedNumber'
 
 interface Props {
   user: any
@@ -37,20 +38,20 @@ export function DashboardClient({ user, allTimetables, pendingHolidays, recentSw
       {/* Stats row */}
       <div ref={statsRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Holidays', value: user?.totalHolidays ?? 28, sub: 'days per year', icon: CalendarDays, accent: 'text-blue-400 bg-blue-500/15' },
+          { label: 'Total Holidays', value: user?.totalHolidays ?? 28, sub: 'days per year', icon: CalendarDays, accent: 'text-blue-800 bg-blue-100 dark:text-blue-400 dark:bg-blue-500/15' },
           null, // remaining — special
           { label: 'Current Shift', value: user?.shift === 'day' ? 'Day' : 'Night', sub: user?.shift === 'day' ? '08:00 – 16:00' : '16:00 – 00:00', icon: user?.shift === 'day' ? Sun : Moon, accent: shiftBadge(user?.shift ?? 'day') },
-          { label: 'Pending Requests', value: pendingHolidays.length, sub: 'holiday requests', icon: Clock, accent: 'text-amber-400 bg-amber-500/15' },
+          { label: 'Pending Requests', value: pendingHolidays.length, sub: 'holiday requests', icon: Clock, accent: 'text-amber-800 bg-amber-100 dark:text-amber-400 dark:bg-amber-500/15' },
         ].map((s, i) => {
           if (i === 1) return (
             <div key="remaining" className="stat-card card">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Remaining</p>
-                <div className="w-9 h-9 bg-emerald-500/15 rounded-xl flex items-center justify-center">
-                  <CalendarDays className="w-4 h-4 text-emerald-400" />
+                <div className="w-9 h-9 bg-emerald-100 dark:bg-emerald-500/15 rounded-xl flex items-center justify-center">
+                  <CalendarDays className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                 </div>
               </div>
-              <p className="text-3xl font-bold text-emerald-400">{remaining}</p>
+              <AnimatedNumber value={remaining} className="text-3xl font-bold text-emerald-700 dark:text-emerald-400" />
               <div className="mt-2">
                 <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-elevated)' }}>
                   <div className="holiday-bar-fill h-full bg-emerald-500 rounded-full" style={{ width: `${usedPct}%` }} />
@@ -69,7 +70,10 @@ export function DashboardClient({ user, allTimetables, pendingHolidays, recentSw
                   <Icon className="w-4 h-4" />
                 </div>
               </div>
-              <p className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{s.value}</p>
+              {typeof s.value === 'number'
+                ? <AnimatedNumber value={s.value} className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }} />
+                : <p className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{s.value}</p>
+              }
               <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{s.sub}</p>
             </div>
           )
@@ -81,7 +85,7 @@ export function DashboardClient({ user, allTimetables, pendingHolidays, recentSw
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-semibold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
             <Clock className="w-5 h-5" style={{ color: 'var(--brand-text)' }} />
-            {role === 'admin' ? 'Team Timetable – This Week' : 'My Timetable – This Week'}
+            Team Timetable – This Week
           </h2>
           <Link href="/dashboard/timetable" className="text-sm transition-colors" style={{ color: 'var(--brand-text)' }}>View full →</Link>
         </div>

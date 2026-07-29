@@ -1,10 +1,11 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { gsap } from 'gsap'
 import toast from 'react-hot-toast'
 import * as XLSX from 'xlsx'
 import { BarChart3, Trophy, Phone, FileText, Plus, X, Check, Download, Upload } from 'lucide-react'
 import { cn, avatarColor } from '@/lib/utils'
+import { AnimatedNumber } from '@/components/ui/AnimatedNumber'
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 
@@ -140,7 +141,16 @@ export function StatsClient({ stats: initial, role, employees, currentMonth, cur
     reader.readAsBinaryString(file)
   }
 
-  const maxResolved = Math.max(...stats.map(s => s.casesResolved), 1)
+  // Overall performance score out of 10: resolved cases count double (the outcome that
+  // matters most), created cases and inbound calls count once, normalized to the top performer.
+  const leaderboard = useMemo(() => {
+    const weightedOf = (s: any) => s.casesCreated + s.casesResolved * 2 + s.inboundCalls
+    const maxWeighted = Math.max(...stats.map(weightedOf), 1)
+    return stats
+      .map(s => ({ ...s, score: Math.round((weightedOf(s) / maxWeighted) * 100) / 10 }))
+      .sort((a, b) => b.score - a.score)
+  }, [stats])
+
   const medals = ['🥇', '🥈', '🥉']
 
   return (
@@ -208,13 +218,16 @@ export function StatsClient({ stats: initial, role, employees, currentMonth, cur
         </div>
       )}
 
-      {role === 'admin' && stats.length > 0 && (
+      {role === 'admin' && leaderboard.length > 0 && (
         <div className="card">
-          <h2 className="font-semibold flex items-center gap-2 mb-5" style={{ color: 'var(--text-primary)' }}>
-            <Trophy className="w-5 h-5 text-amber-400" /> Leaderboard – Cases Resolved
+          <h2 className="font-semibold flex items-center gap-2 mb-1" style={{ color: 'var(--text-primary)' }}>
+            <Trophy className="w-5 h-5 text-amber-400" /> Leaderboard – Overall Performance
           </h2>
+          <p className="text-xs mb-5" style={{ color: 'var(--text-muted)' }}>
+            Score out of 10, combining Cases Resolved (weighted x2), Cases Created, and Inbound Calls
+          </p>
           <div className="space-y-3">
-            {stats.map((s, i) => (
+            {leaderboard.map((s, i) => (
               <div key={s.id} className="stat-row flex items-center gap-4">
                 <span className="text-xl w-8 text-center">{medals[i] ?? `#${i + 1}`}</span>
                 <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0', avatarColor(s.user?.name ?? ''))}>
@@ -223,11 +236,11 @@ export function StatsClient({ stats: initial, role, employees, currentMonth, cur
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
                     <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{s.user?.name}</p>
-                    <p className="text-sm font-bold text-emerald-400">{s.casesResolved}</p>
+                    <AnimatedNumber value={s.score} decimals={1} suffix="/10" duration={1.1} className="text-sm font-bold text-emerald-400" />
                   </div>
                   <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-elevated)' }}>
                     <div className="bar-fill h-full bg-gradient-to-r from-blue-600 to-emerald-500 rounded-full"
-                      style={{ width: `${(s.casesResolved / maxResolved) * 100}%` }} />
+                      style={{ width: `${s.score * 10}%` }} />
                   </div>
                 </div>
               </div>
@@ -255,16 +268,16 @@ export function StatsClient({ stats: initial, role, employees, currentMonth, cur
             )}
             <div className="grid grid-cols-2 gap-3">
               {[
-                { label: 'Cases Created',  value: s.casesCreated,  icon: FileText, color: 'text-blue-400 bg-blue-500/15' },
-                { label: 'Cases Resolved', value: s.casesResolved, icon: Check,    color: 'text-emerald-400 bg-emerald-500/15' },
-                { label: 'Inbound Calls',  value: s.inboundCalls,  icon: Phone,    color: 'text-amber-400 bg-amber-500/15' },
-                { label: 'Outbound Calls', value: s.outboundCalls, icon: Phone,    color: 'text-purple-400 bg-purple-500/15' },
+                { label: 'Cases Created',  value: s.casesCreated,  icon: FileText, color: 'text-blue-800 bg-blue-100 dark:text-blue-400 dark:bg-blue-500/15' },
+                { label: 'Cases Resolved', value: s.casesResolved, icon: Check,    color: 'text-emerald-800 bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-500/15' },
+                { label: 'Inbound Calls',  value: s.inboundCalls,  icon: Phone,    color: 'text-amber-800 bg-amber-100 dark:text-amber-400 dark:bg-amber-500/15' },
+                { label: 'Outbound Calls', value: s.outboundCalls, icon: Phone,    color: 'text-purple-800 bg-purple-100 dark:text-purple-400 dark:bg-purple-500/15' },
               ].map(({ label, value, icon: Icon, color }) => (
                 <div key={label} className="p-3 rounded-xl" style={{ backgroundColor: 'var(--bg-elevated)' }}>
                   <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center mb-2', color)}>
                     <Icon className="w-4 h-4" />
                   </div>
-                  <p className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{value}</p>
+                  <AnimatedNumber value={value} className="text-xl font-bold" style={{ color: 'var(--text-primary)' }} />
                   <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{label}</p>
                 </div>
               ))}

@@ -41,28 +41,38 @@ export const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 export function shiftStyle(val: string | null | undefined): string {
   if (!val) return ''
   const v = val.toLowerCase()
-  if (v === 'off')                              return 'bg-slate-500/15 text-slate-400'
-  if (v.includes('holiday'))                    return 'bg-emerald-500/15 text-emerald-400'
-  if (v.includes('sick'))                       return 'bg-red-500/15 text-red-400'
-  if (v.includes('5pm') || v.includes('6pm') || v.includes('night')) return 'bg-indigo-500/15 text-indigo-400'
-  if (v.includes('8am'))                        return 'bg-amber-500/15 text-amber-400'
-  if (v.includes('9am'))                        return 'bg-yellow-500/15 text-yellow-400'
-  if (v.includes('10am'))                       return 'bg-orange-500/15 text-orange-400'
-  return 'bg-blue-500/15 text-blue-400'
+  if (v === 'off')                              return 'bg-slate-200 text-slate-700 dark:bg-slate-500/25 dark:text-slate-200'
+  if (v.includes('holiday'))                    return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/25 dark:text-emerald-300'
+  if (v.includes('sick'))                       return 'bg-red-100 text-red-800 dark:bg-red-500/25 dark:text-red-300'
+  if (v.includes('5pm') || v.includes('6pm') || v.includes('night')) return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-500/25 dark:text-indigo-300'
+  if (v.includes('8am'))                        return 'bg-amber-100 text-amber-800 dark:bg-amber-500/25 dark:text-amber-300'
+  if (v.includes('9am'))                        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/25 dark:text-yellow-300'
+  if (v.includes('10am'))                       return 'bg-orange-100 text-orange-800 dark:bg-orange-500/25 dark:text-orange-300'
+  return 'bg-blue-100 text-blue-800 dark:bg-blue-500/25 dark:text-blue-300'
 }
 
 /** Tailwind classes for a role badge */
 export function roleBadge(role: string): string {
-  if (role === 'admin')  return 'bg-purple-500/20 text-purple-400'
-  if (role === 'viewer') return 'bg-cyan-500/20 text-cyan-400'
-  return 'bg-slate-700 text-slate-300'
+  if (role === 'admin')  return 'bg-purple-100 text-purple-800 dark:bg-purple-500/25 dark:text-purple-300'
+  if (role === 'viewer') return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-500/25 dark:text-cyan-300'
+  return 'bg-slate-200 text-slate-800 dark:bg-slate-600/40 dark:text-slate-200'
 }
 
 /** Tailwind classes for a shift badge (day/night) */
 export function shiftBadge(shift: string): string {
   return shift === 'day'
-    ? 'bg-amber-500/20 text-amber-300'
-    : 'bg-indigo-500/20 text-indigo-300'
+    ? 'bg-amber-100 text-amber-800 dark:bg-amber-500/25 dark:text-amber-300'
+    : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-500/25 dark:text-indigo-300'
+}
+
+/** Derive a day/night indicator from an actual timetable shift value (e.g. "8am (08:00-16:00)", "5pm (17:00-01:00)") */
+export function deriveShiftPeriod(val: string | null | undefined): 'day' | 'night' | null {
+  if (!val) return null
+  const v = val.toLowerCase()
+  if (v === 'off' || v.includes('holiday') || v.includes('sick')) return null
+  if (v.includes('pm') || v.includes('night') || v.includes('5pm') || v.includes('6pm')) return 'night'
+  if (v.includes('am') || v.includes('day')) return 'day'
+  return null
 }
 
 /** Consistent avatar bg colour cycling through a palette by first letter */

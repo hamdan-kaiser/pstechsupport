@@ -34,26 +34,19 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   const { status } = await req.json()
   if (!['approved', 'rejected'].includes(status)) return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
 
-  const holiday = await prisma.holidayRequest.findUnique({
-    where: { id: params.id },
-    include: { user: true },
-  })
-  if (!holiday) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  const sick = await prisma.sickRequest.findUnique({ where: { id: params.id }, include: { user: true } })
+  if (!sick) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-  await prisma.holidayRequest.update({ where: { id: params.id }, data: { status } })
+  await prisma.sickRequest.update({ where: { id: params.id }, data: { status } })
 
   if (status === 'approved') {
-    await prisma.user.update({
-      where: { id: holiday.userId },
-      data: { usedHolidays: { increment: holiday.days } },
-    })
-    await markTimetableRange(holiday.userId, holiday.startDate, holiday.endDate, 'Holiday')
+    await markTimetableRange(sick.userId, sick.startDate, sick.endDate, 'Sick Off')
   }
 
   await createNotification(
-    holiday.userId,
-    `Holiday Request ${status === 'approved' ? 'Approved ✅' : 'Rejected ❌'}`,
-    `Your holiday request for ${holiday.days} day(s) has been ${status}.`,
+    sick.userId,
+    `Sick Call ${status === 'approved' ? 'Approved ✅' : 'Rejected ❌'}`,
+    `Your sick call for ${sick.days} day(s) has been ${status}.`,
     status === 'approved' ? 'success' : 'error'
   )
 
@@ -66,11 +59,11 @@ export async function DELETE(_: Request, { params }: { params: { id: string } })
   const userId = (session.user as any).id
   const role = (session.user as any).role
 
-  const holiday = await prisma.holidayRequest.findUnique({ where: { id: params.id } })
-  if (!holiday) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-  if (holiday.userId !== userId && role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  if (holiday.status === 'approved') return NextResponse.json({ error: 'Cannot delete approved request' }, { status: 400 })
+  const sick = await prisma.sickRequest.findUnique({ where: { id: params.id } })
+  if (!sick) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (sick.userId !== userId && role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (sick.status === 'approved') return NextResponse.json({ error: 'Cannot delete approved request' }, { status: 400 })
 
-  await prisma.holidayRequest.delete({ where: { id: params.id } })
+  await prisma.sickRequest.delete({ where: { id: params.id } })
   return NextResponse.json({ ok: true })
 }

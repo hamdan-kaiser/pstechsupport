@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Bell, X, Check, CheckCheck } from 'lucide-react'
 import { gsap } from 'gsap'
+import toast from 'react-hot-toast'
 import { useAppStore } from '@/store/appStore'
 import { formatDate } from '@/lib/utils'
 import { cn } from '@/lib/utils'
@@ -12,8 +13,38 @@ interface TopBarProps {
   user: { name?: string | null; email?: string | null; role?: string }
 }
 
+// Maps a notification's refType to the endpoint/body needed to approve or decline it inline.
+const REF_ACTIONS: Record<string, {
+  approveLabel: string
+  declineLabel: string
+  endpoint: (id: string) => string
+  body: (decision: 'approve' | 'decline') => any
+}> = {
+  holiday: {
+    approveLabel: 'Approve', declineLabel: 'Reject',
+    endpoint: id => `/api/holidays/${id}`,
+    body: decision => ({ status: decision === 'approve' ? 'approved' : 'rejected' }),
+  },
+  sick: {
+    approveLabel: 'Approve', declineLabel: 'Reject',
+    endpoint: id => `/api/sick-calls/${id}`,
+    body: decision => ({ status: decision === 'approve' ? 'approved' : 'rejected' }),
+  },
+  'shiftswap-accept': {
+    approveLabel: 'Accept', declineLabel: 'Decline',
+    endpoint: id => `/api/shift-swap/${id}`,
+    body: decision => ({ action: decision === 'approve' ? 'accept' : 'reject' }),
+  },
+  'shiftswap-approve': {
+    approveLabel: 'Approve', declineLabel: 'Reject',
+    endpoint: id => `/api/shift-swap/${id}`,
+    body: decision => ({ action: decision === 'approve' ? 'admin_approve' : 'admin_reject' }),
+  },
+}
+
 export function TopBar({ user }: TopBarProps) {
   const [open, setOpen] = useState(false)
+  const [actioningId, setActioningId] = useState<string | null>(null)
   const panelRef = useRef<HTMLDivElement>(null)
   const bellRef = useRef<HTMLButtonElement>(null)
   const { notifications, unreadCount, setNotifications, markRead, markAllRead } = useAppStore()
@@ -42,6 +73,27 @@ export function TopBar({ user }: TopBarProps) {
     await fetch('/api/notifications/read-all', { method: 'PATCH' })
   }
 
+  async function handleAction(n: any, decision: 'approve' | 'decline') {
+    const config = REF_ACTIONS[n.refType as string]
+    if (!config || !n.refId) return
+    setActioningId(n.id)
+    const res = await fetch(config.endpoint(n.refId), {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(config.body(decision)),
+    })
+    if (res.ok) {
+      toast.success(decision === 'approve' ? 'Approved!' : 'Declined')
+      markRead(n.id)
+      await fetch(`/api/notifications/${n.id}`, { method: 'PATCH' })
+      fetchNotifications()
+    } else {
+      const d = await res.json().catch(() => ({}))
+      toast.error(d.error || 'Action failed')
+    }
+    setActioningId(null)
+  }
+
   useEffect(() => {
     if (open && panelRef.current) {
       gsap.fromTo(panelRef.current,
@@ -58,10 +110,10 @@ export function TopBar({ user }: TopBarProps) {
   }, [unreadCount])
 
   const typeColors: Record<string, string> = {
-    info: 'bg-brand-500/20 text-brand-400',
-    success: 'bg-emerald-500/20 text-emerald-400',
-    warning: 'bg-amber-500/20 text-amber-400',
-    error: 'bg-red-500/20 text-red-400',
+    info: 'bg-brand-100 text-brand-800 dark:bg-brand-500/20 dark:text-brand-300',
+    success: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-400',
+    warning: 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-400',
+    error: 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-400',
   }
 
   return (
@@ -131,6 +183,24 @@ export function TopBar({ user }: TopBarProps) {
                             <p className="text-sm font-medium t-primary" style={{ color: 'var(--text-primary)' }}>{n.title}</p>
                             <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>{n.message}</p>
                             <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{formatDate(n.createdAt)}</p>
+                            {!n.read && n.refType && REF_ACTIONS[n.refType] && (
+                              <div className="flex items-center gap-2 mt-2">
+                                <button
+                                  disabled={actioningId === n.id}
+                                  onClick={() => handleAction(n, 'approve')}
+                                  className="btn-success py-1 px-2.5 text-xs flex items-center gap-1 disabled:opacity-50"
+                                >
+                                  <Check className="w-3.5 h-3.5" /> {REF_ACTIONS[n.refType].approveLabel}
+                                </button>
+                                <button
+                                  disabled={actioningId === n.id}
+                                  onClick={() => handleAction(n, 'decline')}
+                                  className="btn-danger py-1 px-2.5 text-xs flex items-center gap-1 disabled:opacity-50"
+                                >
+                                  <X className="w-3.5 h-3.5" /> {REF_ACTIONS[n.refType].declineLabel}
+                                </button>
+                              </div>
+                            )}
                           </div>
                           {!n.read && (
                             <button onClick={() => handleMarkRead(n.id)} style={{ color: 'var(--text-muted)' }} className="hover:text-blue-400 shrink-0">

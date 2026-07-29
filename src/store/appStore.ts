@@ -6,6 +6,8 @@ interface Notification {
   title: string
   message: string
   type: string
+  refType?: string | null
+  refId?: string | null
   read: boolean
   createdAt: string
 }

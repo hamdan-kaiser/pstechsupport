@@ -63,7 +63,8 @@ export async function POST(req: Request) {
     targetId,
     'Shift Swap Request 🔄',
     `${requester?.name} wants to swap shifts with you on ${swapDateObj.toLocaleDateString()}. They will cover: ${requesterShift}. You would cover: ${targetShift}.`,
-    'warning'
+    'warning',
+    { refType: 'shiftswap-accept', refId: swap.id }
   )
 
   return NextResponse.json(swap, { status: 201 })

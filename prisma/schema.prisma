@@ -21,6 +21,7 @@ model User {
   updatedAt     DateTime @updatedAt
 
   holidayRequests  HolidayRequest[]
+  sickRequests     SickRequest[]
   statsRecords     StatsRecord[]
   timetableEntries TimetableEntry[]
   swapRequestsFrom ShiftSwap[]      @relation("SwapFrom")
@@ -29,6 +30,19 @@ model User {
 }
 
 model HolidayRequest {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startDate DateTime
+  endDate   DateTime
+  days      Int
+  reason    String
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SickRequest {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -98,6 +112,8 @@ model Notification {
   title     String
   message   String
   type      String   @default("info")
+  refType   String?
+  refId     String?
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
 }

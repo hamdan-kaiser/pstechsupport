@@ -26,7 +26,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     await notifyAllAdmins(
       'Shift Swap Awaiting Approval 🔄',
       `${swap.requester.name} and ${swap.target.name} have both agreed to swap shifts on ${new Date(swap.swapDate).toLocaleDateString()}. Please review.`,
-      'warning'
+      'warning',
+      { refType: 'shiftswap-approve', refId: swap.id }
     )
     await createNotification(swap.requesterId, 'Swap Accepted ✅', `${swap.target.name} accepted your shift swap request. Waiting for admin approval.`, 'success')
     return NextResponse.json({ ok: true })

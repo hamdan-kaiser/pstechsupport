@@ -243,7 +243,7 @@ export function EmployeesClient({ employees: initial }: { employees: any[] }) {
         <table className="w-full text-sm min-w-[700px]">
           <thead>
             <tr className="border-b" style={{ borderColor: 'var(--border-base)' }}>
-              {['Employee', 'Email', 'Role', 'Shift', 'Magic Key', 'Holidays', 'Joined', 'Actions'].map(h => (
+              {['Employee', 'Email', 'Role', 'Shift', 'Holidays', 'Magic Key', 'Joined', 'Actions'].map(h => (
                 <th key={h} className="text-left py-3 px-4 font-medium" style={{ color: 'var(--text-secondary)' }}>{h}</th>
               ))}
             </tr>
@@ -269,9 +269,10 @@ export function EmployeesClient({ employees: initial }: { employees: any[] }) {
                   </span>
                 </td>
                 <td className="py-3 px-4">
-                  <span className={cn('flex items-center gap-1.5 text-xs font-medium w-fit px-2.5 py-1 rounded-full', shiftBadge(emp.shift))}>
-                    {emp.shift === 'day' ? <Sun className="w-3 h-3" /> : <Moon className="w-3 h-3" />}
-                    {emp.shift}
+                  <span className={cn('flex items-center gap-1.5 text-xs font-medium w-fit px-2.5 py-1 rounded-full', shiftBadge(emp.todayShift ?? emp.shift))}
+                    title="Derived from today's timetable entry">
+                    {(emp.todayShift ?? emp.shift) === 'day' ? <Sun className="w-3 h-3" /> : <Moon className="w-3 h-3" />}
+                    {emp.todayShift ?? emp.shift}
                   </span>
                 </td>
                 <td className="py-3 px-4">
@@ -279,7 +280,7 @@ export function EmployeesClient({ employees: initial }: { employees: any[] }) {
                   <span style={{ color: 'var(--text-muted)' }}>/{emp.totalHolidays}</span>
                 </td>
                 <td className="py-3 px-4">
-                  <span className="font-mono text-xs px-2.5 py-1 rounded-lg bg-purple-500/10 text-purple-300 flex items-center gap-1.5 w-fit">
+                  <span className="font-mono text-xs px-2.5 py-1 rounded-lg bg-purple-100 text-purple-800 dark:bg-purple-500/20 dark:text-purple-300 flex items-center gap-1.5 w-fit">
                     <KeyRound className="w-3 h-3" />{emp.magicKey || '—'}
                   </span>
                 </td>

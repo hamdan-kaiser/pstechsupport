@@ -11,23 +11,13 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const weekParam = searchParams.get('week')
   const weekStart = weekParam ? new Date(weekParam) : getWeekStart()
-  const userId = (session.user as any).id
-  const role = (session.user as any).role
 
-  if (role === 'admin' || role === 'viewer') {
-    const entries = await prisma.timetableEntry.findMany({
-      where: { weekStart },
-      include: { user: { select: { name: true, shift: true } } },
-      orderBy: { user: { name: 'asc' } },
-    })
-    return NextResponse.json(entries)
-  }
-
-  const entry = await prisma.timetableEntry.findFirst({
-    where: { userId, weekStart },
+  const entries = await prisma.timetableEntry.findMany({
+    where: { weekStart },
     include: { user: { select: { name: true, shift: true } } },
+    orderBy: { user: { name: 'asc' } },
   })
-  return NextResponse.json(entry ? [entry] : [])
+  return NextResponse.json(entries)
 }
 
 export async function POST(req: Request) {

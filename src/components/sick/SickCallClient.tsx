@@ -2,15 +2,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import toast from 'react-hot-toast'
-import { CalendarDays, Plus, X, Check, Trash2 } from 'lucide-react'
+import { Thermometer, Plus, X, Check, Trash2 } from 'lucide-react'
 import { formatDate, diffDays } from '@/lib/utils'
 import { cn } from '@/lib/utils'
-import { COLOR, STYLES } from '@/lib/design'
-import { AnimatedNumber } from '@/components/ui/AnimatedNumber'
 
-interface Props { user: any; requests: any[]; role: string }
+interface Props { requests: any[]; role: string }
 
-export function HolidaysClient({ user, requests: initial, role }: Props) {
+export function SickCallClient({ requests: initial, role }: Props) {
   const [requests, setRequests] = useState(initial)
   const [showForm, setShowForm] = useState(false)
   const [startDate, setStartDate] = useState('')
@@ -18,12 +16,9 @@ export function HolidaysClient({ user, requests: initial, role }: Props) {
   const [reason, setReason] = useState('')
   const [loading, setLoading] = useState(false)
   const formRef = useRef<HTMLDivElement>(null)
-  const listRef = useRef<HTMLDivElement>(null)
-
-  const remaining = (user?.totalHolidays ?? 28) - (user?.usedHolidays ?? 0)
 
   useEffect(() => {
-    gsap.fromTo('.holiday-card', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, stagger: 0.07, ease: 'power2.out' })
+    gsap.fromTo('.sick-card', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, stagger: 0.07, ease: 'power2.out' })
   }, [])
 
   useEffect(() => {
@@ -35,17 +30,15 @@ export function HolidaysClient({ user, requests: initial, role }: Props) {
     e.preventDefault()
     if (!startDate || !endDate) return toast.error('Please select dates')
     if (new Date(endDate) < new Date(startDate)) return toast.error('End date must be after start date')
-    const days = diffDays(new Date(startDate), new Date(endDate))
-    if (days > remaining) return toast.error(`Only ${remaining} days remaining`)
     setLoading(true)
-    const res = await fetch('/api/holidays', {
+    const res = await fetch('/api/sick-calls', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ startDate, endDate, reason }),
     })
     const data = await res.json()
     if (res.ok) {
-      toast.success('Holiday request submitted!')
+      toast.success('Sick call submitted!')
       setRequests(prev => [{ ...data, user: { name: 'You' } }, ...prev])
       setShowForm(false); setStartDate(''); setEndDate(''); setReason('')
     } else toast.error(data.error)
@@ -53,7 +46,7 @@ export function HolidaysClient({ user, requests: initial, role }: Props) {
   }
 
   async function handleAction(id: string, status: 'approved' | 'rejected') {
-    const res = await fetch(`/api/holidays/${id}`, {
+    const res = await fetch(`/api/sick-calls/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
@@ -65,7 +58,7 @@ export function HolidaysClient({ user, requests: initial, role }: Props) {
   }
 
   async function handleDelete(id: string) {
-    const res = await fetch(`/api/holidays/${id}`, { method: 'DELETE' })
+    const res = await fetch(`/api/sick-calls/${id}`, { method: 'DELETE' })
     if (res.ok) {
       toast.success('Request deleted')
       setRequests(prev => prev.filter(r => r.id !== id))
@@ -78,61 +71,46 @@ export function HolidaysClient({ user, requests: initial, role }: Props) {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Holiday Management</h1>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Sick Calls</h1>
           <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-            {role === 'admin' ? 'Manage all holiday requests' : `${remaining} days remaining of ${user?.totalHolidays ?? 28}`}
+            {role === 'admin' ? 'Review and manage sick call reports' : 'Report sickness and track your requests'}
           </p>
         </div>
         {role === 'employee' && (
           <button onClick={() => setShowForm(!showForm)} className="btn-primary flex items-center gap-2">
-            <Plus className="w-4 h-4" /> Request Holiday
+            <Plus className="w-4 h-4" /> Report Sick
           </button>
         )}
       </div>
 
-      {role === 'employee' && (
-        <div className="grid grid-cols-3 gap-4">
-          {[
-            { label: 'Total', value: user?.totalHolidays ?? 28, color: 'var(--text-primary)' },
-            { label: 'Used',      value: user?.usedHolidays ?? 0, color: COLOR.holidayUsed },
-            { label: 'Remaining', value: remaining,               color: COLOR.holidayLeft },
-          ].map(s => (
-            <div key={s.label} className="card text-center">
-              <AnimatedNumber value={s.value} className="text-3xl font-bold" style={{ color: s.color }} />
-              <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{s.label}</p>
-            </div>
-          ))}
-        </div>
-      )}
-
       {showForm && role === 'employee' && (
         <div ref={formRef} className="card overflow-hidden">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="font-semibold" style={{ color: 'var(--text-primary)' }}>New Holiday Request</h2>
+            <h2 className="font-semibold" style={{ color: 'var(--text-primary)' }}>New Sick Call</h2>
             <button onClick={() => setShowForm(false)} style={{ color: 'var(--text-muted)' }}><X className="w-5 h-5" /></button>
           </div>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="label">Start Date</label>
-              <input type="date" className="input" value={startDate} onChange={e => setStartDate(e.target.value)} required min={new Date().toISOString().split('T')[0]} />
+              <input type="date" className="input" value={startDate} onChange={e => setStartDate(e.target.value)} required />
             </div>
             <div>
               <label className="label">End Date</label>
-              <input type="date" className="input" value={endDate} onChange={e => setEndDate(e.target.value)} required min={startDate || new Date().toISOString().split('T')[0]} />
+              <input type="date" className="input" value={endDate} onChange={e => setEndDate(e.target.value)} required min={startDate} />
             </div>
             <div className="sm:col-span-2">
               <label className="label">Reason</label>
-              <input type="text" className="input" placeholder="e.g. Family holiday, medical..." value={reason} onChange={e => setReason(e.target.value)} required />
+              <input type="text" className="input" placeholder="e.g. Flu, migraine, medical appointment..." value={reason} onChange={e => setReason(e.target.value)} required />
             </div>
             {days > 0 && (
-              <div className="sm:col-span-2 p-3 rounded-xl text-sm" style={STYLES.brandInfo}>
-                This request covers <strong>{days}</strong> day{days > 1 ? 's' : ''}. You have <strong>{remaining}</strong> remaining.
+              <div className="sm:col-span-2 p-3 rounded-xl text-sm bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">
+                This report covers <strong>{days}</strong> day{days > 1 ? 's' : ''}. Admin will review and your timetable will update once approved.
               </div>
             )}
             <div className="sm:col-span-2 flex gap-3">
               <button type="submit" disabled={loading} className="btn-primary flex items-center gap-2">
                 {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Check className="w-4 h-4" />}
-                Submit Request
+                Submit Sick Call
               </button>
               <button type="button" onClick={() => setShowForm(false)} className="btn-secondary">Cancel</button>
             </div>
@@ -140,19 +118,19 @@ export function HolidaysClient({ user, requests: initial, role }: Props) {
         </div>
       )}
 
-      <div ref={listRef} className="card">
+      <div className="card">
         <h2 className="font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
-          {role === 'admin' ? 'All Holiday Requests' : 'My Requests'}
+          {role === 'admin' ? 'All Sick Calls' : 'My Sick Calls'}
         </h2>
         {requests.length === 0 ? (
           <div className="text-center py-12" style={{ color: 'var(--text-muted)' }}>
-            <CalendarDays className="w-10 h-10 mx-auto mb-3 opacity-30" />
-            <p>No holiday requests yet</p>
+            <Thermometer className="w-10 h-10 mx-auto mb-3 opacity-30" />
+            <p>No sick calls reported</p>
           </div>
         ) : (
           <div className="space-y-3">
             {requests.map(r => (
-              <div key={r.id} className="holiday-card flex items-center justify-between p-4 rounded-xl border transition-colors"
+              <div key={r.id} className="sick-card flex items-center justify-between p-4 rounded-xl border transition-colors"
                 style={{ backgroundColor: 'var(--bg-elevated)', borderColor: 'var(--border-subtle)' }}>
                 <div className="flex-1 min-w-0">
                   {role === 'admin' && (

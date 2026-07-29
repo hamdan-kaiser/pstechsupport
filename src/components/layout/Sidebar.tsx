@@ -6,13 +6,14 @@ import { gsap } from 'gsap'
 import { useEffect, useRef } from 'react'
 import {
   LayoutDashboard, CalendarDays, BarChart3, Clock, ArrowLeftRight,
-  Users, Settings, LogOut, Shield,
+  Users, Settings, LogOut, Shield, Thermometer,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const employeeLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/holidays', label: 'Holidays', icon: CalendarDays },
+  { href: '/dashboard/sick-calls', label: 'Sick Calls', icon: Thermometer },
   { href: '/dashboard/stats', label: 'My Stats', icon: BarChart3 },
   { href: '/dashboard/timetable', label: 'Timetable', icon: Clock },
   { href: '/dashboard/shift-swap', label: 'Shift Swap', icon: ArrowLeftRight },
@@ -21,6 +22,7 @@ const employeeLinks = [
 const adminLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/holidays', label: 'Holidays', icon: CalendarDays },
+  { href: '/dashboard/sick-calls', label: 'Sick Calls', icon: Thermometer },
   { href: '/dashboard/stats', label: 'Stats & Leaderboard', icon: BarChart3 },
   { href: '/dashboard/timetable', label: 'Timetable', icon: Clock },
   { href: '/dashboard/shift-swap', label: 'Shift Swap', icon: ArrowLeftRight },
@@ -44,6 +46,15 @@ export function Sidebar({ role }: { role: string }) {
     )
   }, [])
 
+  function handleLinkEnter(e: React.MouseEvent<HTMLElement>) {
+    const icon = e.currentTarget.querySelector('svg')
+    if (icon) gsap.to(icon, { scale: 1.2, x: 3, duration: 0.25, ease: 'back.out(3)' })
+  }
+  function handleLinkLeave(e: React.MouseEvent<HTMLElement>) {
+    const icon = e.currentTarget.querySelector('svg')
+    if (icon) gsap.to(icon, { scale: 1, x: 0, duration: 0.25, ease: 'power2.out' })
+  }
+
   return (
     <div ref={sidebarRef} className="w-64 shrink-0 flex flex-col h-full border-r" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-base)' }}>
       <div className="p-6 border-b" style={{ borderColor: 'var(--border-base)' }}>
@@ -60,7 +71,8 @@ export function Sidebar({ role }: { role: string }) {
 
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {links.map(({ href, label, icon: Icon }) => (
-          <Link key={href} href={href} className={cn('sidebar-link', pathname === href && 'active')}>
+          <Link key={href} href={href} className={cn('sidebar-link', pathname === href && 'active')}
+            onMouseEnter={handleLinkEnter} onMouseLeave={handleLinkLeave}>
             <Icon className="w-4 h-4 shrink-0" />
             {label}
           </Link>
@@ -70,6 +82,7 @@ export function Sidebar({ role }: { role: string }) {
       <div className="p-4 border-t" style={{ borderColor: 'var(--border-base)' }}>
         <button
           onClick={() => signOut({ callbackUrl: '/login', redirect: true })}
+          onMouseEnter={handleLinkEnter} onMouseLeave={handleLinkLeave}
           className="sidebar-link w-full text-red-400 hover:text-red-300 hover:bg-red-500/10"
         >
           <LogOut className="w-4 h-4" />

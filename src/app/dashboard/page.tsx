@@ -20,20 +20,12 @@ export default async function DashboardPage() {
     }),
   ])
 
-  // For admin: get all timetable entries for current week
-  let allTimetables: any[] = []
-  if ((session!.user as any).role === 'admin') {
-    const weekStart = getWeekStart()
-    allTimetables = await prisma.timetableEntry.findMany({
-      where: { weekStart },
-      include: { user: { select: { name: true, shift: true } } },
-    })
-  } else {
-    // Employee sees their own timetable
-    const weekStart = getWeekStart()
-    const entry = await prisma.timetableEntry.findFirst({ where: { userId, weekStart } })
-    if (entry) allTimetables = [{ ...entry, user: { name: user?.name, shift: user?.shift } }]
-  }
+  // Everyone sees the full team's timetable for the current week
+  const weekStart = getWeekStart()
+  const allTimetables = await prisma.timetableEntry.findMany({
+    where: { weekStart },
+    include: { user: { select: { name: true, shift: true } } },
+  })
 
   return (
     <DashboardClient
