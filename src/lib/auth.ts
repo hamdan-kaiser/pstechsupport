@@ -35,3 +35,4 @@ export const authOptions: NextAuthOptions = {
   session: { strategy: 'jwt', maxAge: 30 * 24 * 60 * 60 * 365 }, // 30 years — never auto-expire
   secret: process.env.NEXTAUTH_SECRET,
 }
+

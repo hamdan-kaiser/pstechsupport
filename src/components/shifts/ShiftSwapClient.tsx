@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import toast from 'react-hot-toast'
 import { ArrowLeftRight, Plus, X, Check, Clock, Sun, Moon, AlertCircle } from 'lucide-react'
-import { formatDate, avatarColor } from '@/lib/utils'
+import { formatDate, avatarColor, getWeekStart, getDayKey, splitShiftValue } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import { STYLES } from '@/lib/design'
 
@@ -16,18 +16,60 @@ const SHIFT_OPTIONS = [
   { value: '5pm (17:00-01:00)',  label: '5pm (17:00–01:00)',  icon: Moon, color: 'text-indigo-400' },
 ]
 
+/** Matches a raw timetable value (e.g. "8am" or "8am (08:00-16:00)") to one of the 4 standard
+ *  shift options by comparing labels — returns '' for OFF/Holiday/Sick/unscheduled/unrecognized. */
+function matchShiftOption(rawValue: string | null | undefined): string {
+  if (!rawValue) return ''
+  const rawLabel = splitShiftValue(rawValue).label.trim().toLowerCase()
+  const match = SHIFT_OPTIONS.find(opt => splitShiftValue(opt.value).label.trim().toLowerCase() === rawLabel)
+  return match ? match.value : ''
+}
+
 export function ShiftSwapClient({ swaps: initial, employees, role, currentUserId }: Props) {
   const [swaps, setSwaps] = useState(initial)
   const [showForm, setShowForm] = useState(false)
   const [swapDate, setSwapDate] = useState('')
   const [targetId, setTargetId] = useState('')
-  const [requesterShift, setRequesterShift] = useState(SHIFT_OPTIONS[0].value)
-  const [targetShift, setTargetShift] = useState(SHIFT_OPTIONS[3].value)
+  const [requesterShift, setRequesterShift] = useState('')
+  const [targetShift, setTargetShift] = useState('')
+  const [weekEntries, setWeekEntries] = useState<any[]>([])
+  const [loadingSchedule, setLoadingSchedule] = useState(false)
   const [loading, setLoading] = useState(false)
   const [checking, setChecking] = useState(false)
   const [conflict, setConflict] = useState<string | null>(null)
   const formRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
+
+  // Load the relevant week's real timetable whenever the chosen date changes
+  useEffect(() => {
+    setWeekEntries([]) // clear stale data from a previous date immediately, so no wrong default flashes
+    if (!swapDate) return
+    let cancelled = false
+    setLoadingSchedule(true)
+    const weekStart = getWeekStart(new Date(swapDate))
+    fetch(`/api/timetable?week=${weekStart.toISOString()}`)
+      .then(res => res.ok ? res.json() : [])
+      .then(data => { if (!cancelled) setWeekEntries(Array.isArray(data) ? data : []) })
+      .catch(() => { if (!cancelled) setWeekEntries([]) })
+      .finally(() => { if (!cancelled) setLoadingSchedule(false) })
+    return () => { cancelled = true }
+  }, [swapDate])
+
+  // Auto-fill "your shift" from your actual schedule that day — blank if off/unscheduled
+  useEffect(() => {
+    if (!swapDate) { setRequesterShift(''); return }
+    const dayKey = getDayKey(new Date(swapDate))
+    const myEntry = weekEntries.find(e => e.userId === currentUserId)
+    setRequesterShift(matchShiftOption(myEntry ? myEntry[dayKey] : null))
+  }, [weekEntries, swapDate, currentUserId])
+
+  // Auto-fill the target's shift the same way, once a target is picked
+  useEffect(() => {
+    if (!swapDate || !targetId) { setTargetShift(''); return }
+    const dayKey = getDayKey(new Date(swapDate))
+    const targetEntry = weekEntries.find(e => e.userId === targetId)
+    setTargetShift(matchShiftOption(targetEntry ? targetEntry[dayKey] : null))
+  }, [weekEntries, swapDate, targetId])
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -142,6 +184,12 @@ export function ShiftSwapClient({ swaps: initial, employees, role, currentUserId
             <div>
               <label className="label">📅 Date you want to swap</label>
               <input type="date" className="input" value={swapDate} onChange={e => setSwapDate(e.target.value)} required min={new Date().toISOString().split('T')[0]} />
+              {loadingSchedule && (
+                <p className="flex items-center gap-2 text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
+                  <div className="w-3.5 h-3.5 border-2 border-slate-500 border-t-transparent rounded-full animate-spin" />
+                  Loading the real schedule for that day...
+                </p>
+              )}
             </div>
 
             <div>
@@ -149,6 +197,11 @@ export function ShiftSwapClient({ swaps: initial, employees, role, currentUserId
               <div className="grid grid-cols-2 gap-3">
                 {SHIFT_OPTIONS.map(opt => shiftBtn(opt.value, requesterShift, () => setRequesterShift(opt.value), opt))}
               </div>
+              {swapDate && !loadingSchedule && !requesterShift && (
+                <p className="text-xs mt-2 flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" /> You're not scheduled to work that day — select the shift you'd be covering.
+                </p>
+              )}
             </div>
 
             <div>
@@ -165,6 +218,11 @@ export function ShiftSwapClient({ swaps: initial, employees, role, currentUserId
                 <div className="grid grid-cols-2 gap-3">
                   {SHIFT_OPTIONS.map(opt => shiftBtn(opt.value, targetShift, () => setTargetShift(opt.value), opt))}
                 </div>
+                {swapDate && !loadingSchedule && !targetShift && (
+                  <p className="text-xs mt-2 flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" /> {selectedTarget?.name} isn't scheduled to work that day — select the shift manually.
+                  </p>
+                )}
               </div>
             )}
 
@@ -180,7 +238,7 @@ export function ShiftSwapClient({ swaps: initial, employees, role, currentUserId
               </div>
             )}
 
-            {targetId && swapDate && !conflict && (
+            {targetId && swapDate && requesterShift && targetShift && !conflict && (
               <div className="p-4 rounded-xl text-sm space-y-1" style={STYLES.brandSummary}>
                 <p className="font-medium" style={{ color: 'var(--brand-text)' }}>Swap Summary</p>
                 <p style={{ color: 'var(--text-primary)' }}>📅 Date: <strong>{new Date(swapDate).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</strong></p>
@@ -190,7 +248,7 @@ export function ShiftSwapClient({ swaps: initial, employees, role, currentUserId
             )}
 
             <div className="flex gap-3">
-              <button type="submit" disabled={loading || !!conflict || !targetId || !swapDate} className="btn-primary flex items-center gap-2">
+              <button type="submit" disabled={loading || !!conflict || !targetId || !swapDate || !requesterShift || !targetShift} className="btn-primary flex items-center gap-2">
                 {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <ArrowLeftRight className="w-4 h-4" />}
                 Send Request
               </button>

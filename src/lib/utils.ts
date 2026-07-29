@@ -37,8 +37,11 @@ export const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 /** Maps JS Date.getDay() (0=Sunday) to the timetable's day-of-week field name */
 export const JS_DAY_KEYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const
+export function getDayKey(date: Date): typeof JS_DAY_KEYS[number] {
+  return JS_DAY_KEYS[date.getDay()]
+}
 export function getTodayDayKey(): typeof JS_DAY_KEYS[number] {
-  return JS_DAY_KEYS[new Date().getDay()]
+  return getDayKey(new Date())
 }
 
 /** Splits a shift value like "8am (08:00-16:00)" into a short label and a readable time range */
