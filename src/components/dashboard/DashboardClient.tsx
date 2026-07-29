@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
-import { CalendarDays, ArrowLeftRight, Sun, Moon, Clock } from 'lucide-react'
+import { CalendarDays, ArrowLeftRight, Sun, Moon, Clock, Thermometer } from 'lucide-react'
 import { formatDate, DAY_LABELS, DAYS, shiftStyle, shiftBadge, avatarColor, getTodayDayKey, splitShiftValue, deriveShiftPeriod } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
@@ -12,12 +12,13 @@ interface Props {
   timetable: any
   allTimetables: any[]
   pendingHolidays: any[]
+  pendingSickCalls: any[]
   recentSwaps: any[]
   role: string
   currentUserId: string
 }
 
-export function DashboardClient({ user, allTimetables, pendingHolidays, recentSwaps, role, currentUserId }: Props) {
+export function DashboardClient({ user, allTimetables, pendingHolidays, pendingSickCalls, recentSwaps, role, currentUserId }: Props) {
   const statsRef = useRef<HTMLDivElement>(null)
   const tableRef = useRef<HTMLDivElement>(null)
 
@@ -56,7 +57,7 @@ export function DashboardClient({ user, allTimetables, pendingHolidays, recentSw
           { label: 'Total Holidays', value: user?.totalHolidays ?? 28, sub: 'days per year', icon: CalendarDays, accent: 'text-blue-800 bg-blue-100 dark:text-blue-400 dark:bg-blue-500/15' },
           null, // remaining — special
           { label: 'Current Shift', value: currentShift.label, sub: currentShift.sub, icon: currentShift.icon, accent: currentShift.accent },
-          { label: 'Pending Requests', value: pendingHolidays.length, sub: 'holiday requests', icon: Clock, accent: 'text-amber-800 bg-amber-100 dark:text-amber-400 dark:bg-amber-500/15' },
+          { label: 'Pending Requests', value: pendingHolidays.length + pendingSickCalls.length, sub: 'holiday & sick requests', icon: Clock, accent: 'text-amber-800 bg-amber-100 dark:text-amber-400 dark:bg-amber-500/15' },
         ].map((s, i) => {
           if (i === 1) return (
             <div key="remaining" className="stat-card card">
@@ -167,7 +168,7 @@ export function DashboardClient({ user, allTimetables, pendingHolidays, recentSw
       </div>
 
       {/* Bottom row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="card">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
@@ -184,6 +185,30 @@ export function DashboardClient({ user, allTimetables, pendingHolidays, recentSw
                   <div>
                     <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{formatDate(h.startDate)} – {formatDate(h.endDate)}</p>
                     <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{h.days} day{h.days > 1 ? 's' : ''} · {h.reason}</p>
+                  </div>
+                  <span className="badge-pending">Pending</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="card">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+              <Thermometer className="w-4 h-4" style={{ color: 'var(--brand-text)' }} /> Sick Calls
+            </h3>
+            <Link href="/dashboard/sick-calls" className="text-xs transition-colors" style={{ color: 'var(--brand-text)' }}>View all →</Link>
+          </div>
+          {pendingSickCalls.length === 0 ? (
+            <p className="text-sm text-center py-6" style={{ color: 'var(--text-muted)' }}>No pending sick calls</p>
+          ) : (
+            <div className="space-y-3">
+              {pendingSickCalls.map(s => (
+                <div key={s.id} className="flex items-center justify-between p-3 rounded-xl" style={{ backgroundColor: 'var(--bg-elevated)' }}>
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{formatDate(s.startDate)} – {formatDate(s.endDate)}</p>
+                    <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{s.days} day{s.days > 1 ? 's' : ''} · {s.reason}</p>
                   </div>
                   <span className="badge-pending">Pending</span>
                 </div>

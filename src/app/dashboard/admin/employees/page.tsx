@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { EmployeesClient } from '@/components/admin/EmployeesClient'
 import { getWeekStart, deriveShiftPeriod } from '@/lib/utils'
-import { getUsedHolidayDaysForUsers } from '@/lib/holidayUsage'
+import { getApprovedSickDaysForUsers } from '@/lib/sickUsage'
 
 const JS_DAY_KEYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const
 
@@ -23,12 +23,12 @@ export default async function EmployeesPage() {
     prisma.timetableEntry.findMany({ where: { weekStart } }),
   ])
 
-  const usedHolidaysByUser = await getUsedHolidayDaysForUsers(employees.map(e => e.id))
+  const sickDaysByUser = await getApprovedSickDaysForUsers(employees.map(e => e.id))
 
   const employeesWithTodayShift = employees.map(emp => {
     const entry = timetableEntries.find(t => t.userId === emp.id) as any
     const todayValue = entry ? entry[todayKey] : null
-    return { ...emp, usedHolidays: usedHolidaysByUser[emp.id] ?? 0, todayShift: deriveShiftPeriod(todayValue) ?? emp.shift }
+    return { ...emp, sickDays: sickDaysByUser[emp.id] ?? 0, todayShift: deriveShiftPeriod(todayValue) ?? emp.shift }
   })
 
   return <EmployeesClient employees={employeesWithTodayShift} />

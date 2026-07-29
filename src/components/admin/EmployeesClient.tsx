@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 import { COLOR } from '@/lib/design'
 import * as XLSX from 'xlsx'
 
-const EMPTY_FORM = { name: '', email: '', password: '', role: 'employee', shift: 'day', magicKey: '0000', totalHolidays: 28 }
+const EMPTY_FORM = { name: '', email: '', password: '', role: 'employee', shift: 'day', magicKey: '0000', totalHolidays: 28, usedHolidays: 0 }
 
 export function EmployeesClient({ employees: initial }: { employees: any[] }) {
   const [employees, setEmployees] = useState(initial)
@@ -31,7 +31,7 @@ export function EmployeesClient({ employees: initial }: { employees: any[] }) {
 
   function openEdit(emp: any) {
     setEditing(emp)
-    setForm({ name: emp.name, email: emp.email, password: '', role: emp.role, shift: emp.shift, magicKey: emp.magicKey || '0000', totalHolidays: emp.totalHolidays })
+    setForm({ name: emp.name, email: emp.email, password: '', role: emp.role, shift: emp.shift, magicKey: emp.magicKey || '0000', totalHolidays: emp.totalHolidays, usedHolidays: emp.usedHolidays })
     setShowForm(false)
   }
 
@@ -95,9 +95,10 @@ export function EmployeesClient({ employees: initial }: { employees: any[] }) {
       Shift: e.shift,
       'Total Holidays': e.totalHolidays,
       'Used Holidays': e.usedHolidays,
+      'Sick Days': e.sickDays ?? 0,
     }))
     const ws = XLSX.utils.json_to_sheet(rows)
-    ws['!cols'] = [{ wch: 24 }, { wch: 30 }, { wch: 12 }, { wch: 12 }, { wch: 16 }, { wch: 14 }]
+    ws['!cols'] = [{ wch: 24 }, { wch: 30 }, { wch: 12 }, { wch: 12 }, { wch: 16 }, { wch: 14 }, { wch: 12 }]
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Employees')
     XLSX.writeFile(wb, 'employees.xlsx')
@@ -212,6 +213,12 @@ export function EmployeesClient({ employees: initial }: { employees: any[] }) {
               <label className="label">Total Holidays (days/year)</label>
               <input type="number" min={0} max={365} className="input" value={form.totalHolidays} onChange={e => setForm((f: any) => ({ ...f, totalHolidays: +e.target.value }))} />
             </div>
+            {editing && (
+              <div>
+                <label className="label">Used Holidays (days taken)</label>
+                <input type="number" min={0} max={365} className="input" value={form.usedHolidays} onChange={e => setForm((f: any) => ({ ...f, usedHolidays: +e.target.value }))} />
+              </div>
+            )}
             <div>
               <label className="label">Magic Key (4 digits)</label>
               <div className="relative">
@@ -242,7 +249,7 @@ export function EmployeesClient({ employees: initial }: { employees: any[] }) {
         <table className="w-full text-sm min-w-[700px]">
           <thead>
             <tr className="border-b" style={{ borderColor: 'var(--border-base)' }}>
-              {['Employee', 'Email', 'Role', 'Shift', 'Holidays', 'Magic Key', 'Actions'].map(h => (
+              {['Employee', 'Email', 'Role', 'Shift', 'Holidays', 'Sick Days', 'Magic Key', 'Actions'].map(h => (
                 <th key={h} className="text-left py-3 px-4 font-medium" style={{ color: 'var(--text-secondary)' }}>{h}</th>
               ))}
             </tr>
@@ -277,6 +284,15 @@ export function EmployeesClient({ employees: initial }: { employees: any[] }) {
                 <td className="py-3 px-4">
                   <span style={{ color: 'var(--text-primary)' }}>{emp.usedHolidays}</span>
                   <span style={{ color: 'var(--text-muted)' }}>/{emp.totalHolidays}</span>
+                </td>
+                <td className="py-3 px-4">
+                  {emp.sickDays > 0 ? (
+                    <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300">
+                      {emp.sickDays} day{emp.sickDays > 1 ? 's' : ''}
+                    </span>
+                  ) : (
+                    <span style={{ color: 'var(--text-faint)' }}>—</span>
+                  )}
                 </td>
                 <td className="py-3 px-4">
                   <span className="font-mono text-xs px-2.5 py-1 rounded-lg bg-purple-100 text-purple-800 dark:bg-purple-500/20 dark:text-purple-300 flex items-center gap-1.5 w-fit">
