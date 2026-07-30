@@ -12,14 +12,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <head>
         <script dangerouslySetInnerHTML={{
           __html: `
             try {
               const t = JSON.parse(localStorage.getItem('portal-theme') || '{}')
+              document.documentElement.classList.remove('dark', 'light')
               document.documentElement.classList.add(t.state?.theme || 'dark')
             } catch(e) {
+              document.documentElement.classList.remove('dark', 'light')
               document.documentElement.classList.add('dark')
             }
           `

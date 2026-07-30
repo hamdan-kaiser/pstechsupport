@@ -23,7 +23,16 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user) { token.id = user.id; token.role = (user as any).role }
+      if (user) {
+        token.id = user.id
+        token.role = (user as any).role
+      } else if (token.id) {
+        // Sessions here never expire (see maxAge below), so re-check the role from the DB on
+        // every refresh — otherwise a role change (e.g. admin -> employee) only takes effect
+        // the next time that person logs out and back in, which for a 30-year token is never.
+        const dbUser = await prisma.user.findUnique({ where: { id: token.id as string }, select: { role: true } })
+        if (dbUser) token.role = dbUser.role
+      }
       return token
     },
     async session({ session, token }) {

@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getWeekStart } from '@/lib/utils'
 import { notifyAllEmployees } from '@/lib/notifications'
+import { getLeaveOverridesForWeek } from '@/lib/leaveOverrides'
 
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions)
@@ -29,13 +30,25 @@ export async function POST(req: Request) {
   const week = new Date(weekStart)
 
   const results = await Promise.all(
-    entries.map((e: any) =>
-      prisma.timetableEntry.upsert({
+    entries.map(async (e: any) => {
+      // Approved Holiday/Sick days always win — a schedule re-upload can't silently erase leave
+      // that was already approved and written to the timetable.
+      const overrides = await getLeaveOverridesForWeek(e.userId, week)
+      const days = {
+        monday: overrides.monday ?? e.monday,
+        tuesday: overrides.tuesday ?? e.tuesday,
+        wednesday: overrides.wednesday ?? e.wednesday,
+        thursday: overrides.thursday ?? e.thursday,
+        friday: overrides.friday ?? e.friday,
+        saturday: overrides.saturday ?? e.saturday,
+        sunday: overrides.sunday ?? e.sunday,
+      }
+      return prisma.timetableEntry.upsert({
         where: { userId_weekStart: { userId: e.userId, weekStart: week } },
-        update: { monday: e.monday, tuesday: e.tuesday, wednesday: e.wednesday, thursday: e.thursday, friday: e.friday, saturday: e.saturday, sunday: e.sunday },
-        create: { userId: e.userId, weekStart: week, monday: e.monday, tuesday: e.tuesday, wednesday: e.wednesday, thursday: e.thursday, friday: e.friday, saturday: e.saturday, sunday: e.sunday },
+        update: days,
+        create: { userId: e.userId, weekStart: week, ...days },
       })
-    )
+    })
   )
 
   await notifyAllEmployees('Timetable Updated 📅', 'The timetable has been updated by admin. Check your schedule.', 'info')

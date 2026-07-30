@@ -13,12 +13,13 @@ interface Props {
   allTimetables: any[]
   pendingHolidays: any[]
   pendingSickCalls: any[]
+  pendingOtherCount: number
   recentSwaps: any[]
   role: string
   currentUserId: string
 }
 
-export function DashboardClient({ user, allTimetables, pendingHolidays, pendingSickCalls, recentSwaps, role, currentUserId }: Props) {
+export function DashboardClient({ user, allTimetables, pendingHolidays, pendingSickCalls, pendingOtherCount, recentSwaps, role, currentUserId }: Props) {
   const statsRef = useRef<HTMLDivElement>(null)
   const tableRef = useRef<HTMLDivElement>(null)
 
@@ -29,6 +30,9 @@ export function DashboardClient({ user, allTimetables, pendingHolidays, pendingS
   const myEntry = allTimetables.find(t => t.userId === currentUserId)
   const todayValue: string | null = myEntry ? myEntry[getTodayDayKey()] : null
   const todayPeriod = deriveShiftPeriod(todayValue)
+  const todayColIndex = DAYS.indexOf(getTodayDayKey())
+  const TODAY_TINT = 'rgba(245, 158, 11, 0.12)'
+
   const currentShift = (() => {
     if (!todayValue) return { label: 'Not scheduled', sub: 'No shift set for today', icon: Clock, accent: 'text-slate-700 bg-slate-200 dark:text-slate-300 dark:bg-slate-600/30' }
     const v = todayValue.toLowerCase()
@@ -57,7 +61,7 @@ export function DashboardClient({ user, allTimetables, pendingHolidays, pendingS
           { label: 'Total Holidays', value: user?.totalHolidays ?? 28, sub: 'days per year', icon: CalendarDays, accent: 'text-blue-800 bg-blue-100 dark:text-blue-400 dark:bg-blue-500/15' },
           null, // remaining — special
           { label: 'Current Shift', value: currentShift.label, sub: currentShift.sub, icon: currentShift.icon, accent: currentShift.accent },
-          { label: 'Pending Requests', value: pendingHolidays.length + pendingSickCalls.length, sub: 'holiday & sick requests', icon: Clock, accent: 'text-amber-800 bg-amber-100 dark:text-amber-400 dark:bg-amber-500/15' },
+          { label: 'Pending Requests', value: pendingHolidays.length + pendingSickCalls.length + pendingOtherCount, sub: 'holiday, sick & other requests', icon: Clock, accent: 'text-amber-800 bg-amber-100 dark:text-amber-400 dark:bg-amber-500/15' },
         ].map((s, i) => {
           if (i === 1) return (
             <div key="remaining" className="stat-card card">
@@ -120,8 +124,8 @@ export function DashboardClient({ user, allTimetables, pendingHolidays, pendingS
               <thead>
                 <tr className="border-b" style={{ borderColor: 'var(--border-base)' }}>
                   <th className="text-left py-3 px-3 font-medium w-40" style={{ color: 'var(--text-secondary)' }}>Employee</th>
-                  {DAY_LABELS.map(d => (
-                    <th key={d} className="text-center py-3 px-2 font-medium" style={{ color: 'var(--text-secondary)' }}>{d}</th>
+                  {DAY_LABELS.map((d, i) => (
+                    <th key={d} className="text-center py-3 px-2 font-medium" style={{ color: i === todayColIndex ? 'var(--brand-text)' : 'var(--text-secondary)', backgroundColor: i === todayColIndex ? TODAY_TINT : undefined }}>{d}</th>
                   ))}
                 </tr>
               </thead>
@@ -148,8 +152,8 @@ export function DashboardClient({ user, allTimetables, pendingHolidays, pendingS
                         </div>
                       </div>
                     </td>
-                    {DAYS.map(day => (
-                      <td key={day} className="py-3 px-2 text-center">
+                    {DAYS.map((day, di) => (
+                      <td key={day} className="py-3 px-2 text-center" style={{ backgroundColor: di === todayColIndex ? TODAY_TINT : undefined }}>
                         {entry[day] ? (
                           <span className={cn('text-xs px-2 py-1 rounded-lg font-medium', shiftStyle(entry[day]))}>
                             {entry[day]}

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getMonthlyLeaveSummaryForUsers } from '@/lib/monthlyLeave'
 
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions)
@@ -17,7 +18,8 @@ export async function GET(req: Request) {
       include: { user: { select: { name: true, shift: true } } },
       orderBy: { casesResolved: 'desc' },
     })
-    return NextResponse.json(stats)
+    const summaries = await getMonthlyLeaveSummaryForUsers(stats.map(s => s.userId), month, year)
+    return NextResponse.json(stats.map(s => ({ ...s, ...summaries[s.userId] })))
   }
 
   const userId = (session.user as any).id
@@ -25,7 +27,11 @@ export async function GET(req: Request) {
     where: { userId },
     orderBy: [{ year: 'desc' }, { month: 'desc' }],
   })
-  return NextResponse.json(stats)
+  const merged = await Promise.all(stats.map(async s => {
+    const summary = await getMonthlyLeaveSummaryForUsers([userId], s.month, s.year)
+    return { ...s, ...summary[userId] }
+  }))
+  return NextResponse.json(merged)
 }
 
 export async function POST(req: Request) {

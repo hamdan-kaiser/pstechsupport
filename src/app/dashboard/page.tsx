@@ -8,11 +8,13 @@ export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
   const userId = (session!.user as any).id
 
-  const [user, timetable, pendingHolidays, pendingSickCalls, recentSwaps] = await Promise.all([
+  const [user, timetable, pendingHolidays, pendingSickCalls, pendingAdditionalShifts, pendingEarlyLeaves, recentSwaps] = await Promise.all([
     prisma.user.findUnique({ where: { id: userId }, select: { id: true, name: true, shift: true, totalHolidays: true, usedHolidays: true } }),
     prisma.timetableEntry.findFirst({ where: { userId }, orderBy: { weekStart: 'desc' } }),
     prisma.holidayRequest.findMany({ where: { userId, status: 'pending' }, orderBy: { createdAt: 'desc' }, take: 3 }),
     prisma.sickRequest.findMany({ where: { userId, status: 'pending' }, orderBy: { createdAt: 'desc' }, take: 3 }),
+    prisma.additionalShiftRequest.count({ where: { userId, status: 'pending' } }),
+    prisma.earlyLeaveRequest.count({ where: { userId, status: 'pending' } }),
     prisma.shiftSwap.findMany({
       where: { OR: [{ requesterId: userId }, { targetId: userId }] },
       include: { requester: { select: { name: true } }, target: { select: { name: true } } },
@@ -35,6 +37,7 @@ export default async function DashboardPage() {
       allTimetables={allTimetables}
       pendingHolidays={pendingHolidays}
       pendingSickCalls={pendingSickCalls}
+      pendingOtherCount={pendingAdditionalShifts + pendingEarlyLeaves}
       recentSwaps={recentSwaps}
       role={(session!.user as any).role}
       currentUserId={userId}

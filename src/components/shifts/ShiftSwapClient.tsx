@@ -78,6 +78,18 @@ export function ShiftSwapClient({ swaps: initial, employees, role, currentUserId
     return () => ctx.revert()
   }, [swaps])
 
+  // Keep the list fresh — otherwise an already-open tab (e.g. admin's) keeps showing a stale
+  // status after someone else accepts/declines/approves elsewhere.
+  useEffect(() => {
+    async function refresh() {
+      const res = await fetch('/api/shift-swap')
+      if (res.ok) setSwaps(await res.json())
+    }
+    const interval = setInterval(refresh, 20000)
+    window.addEventListener('focus', refresh)
+    return () => { clearInterval(interval); window.removeEventListener('focus', refresh) }
+  }, [])
+
   useEffect(() => {
     if (showForm && formRef.current)
       gsap.fromTo(formRef.current, { y: -15, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: 'power2.out' })

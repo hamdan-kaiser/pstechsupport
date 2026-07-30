@@ -40,6 +40,16 @@ const REF_ACTIONS: Record<string, {
     endpoint: id => `/api/shift-swap/${id}`,
     body: decision => ({ action: decision === 'approve' ? 'admin_approve' : 'admin_reject' }),
   },
+  'additional-shift': {
+    approveLabel: 'Approve', declineLabel: 'Reject',
+    endpoint: id => `/api/additional-shifts/${id}`,
+    body: decision => ({ status: decision === 'approve' ? 'approved' : 'rejected' }),
+  },
+  'early-leave': {
+    approveLabel: 'Approve', declineLabel: 'Reject',
+    endpoint: id => `/api/sudden-leave/${id}`,
+    body: decision => ({ status: decision === 'approve' ? 'approved' : 'rejected' }),
+  },
 }
 
 export function TopBar({ user }: TopBarProps) {

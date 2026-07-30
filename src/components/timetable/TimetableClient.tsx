@@ -79,6 +79,13 @@ export function TimetableClient({ entries: initial, employees, role, weekStart: 
     reader.readAsBinaryString(file)
   }
 
+  const todayColIndex = DAY_LABELS.findIndex((_, i) => {
+    const d = new Date(weekStart)
+    d.setDate(d.getDate() + i)
+    return d.toDateString() === new Date().toDateString()
+  })
+  const TODAY_TINT = 'rgba(245, 158, 11, 0.12)'
+
   const weekLabel = weekStart.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
   const weekEnd = new Date(weekStart); weekEnd.setDate(weekEnd.getDate() + 6)
   const weekEndLabel = weekEnd.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -163,10 +170,13 @@ export function TimetableClient({ entries: initial, employees, role, weekStart: 
                 {DAY_LABELS.map((d, i) => {
                   const dayDate = new Date(weekStart)
                   dayDate.setDate(dayDate.getDate() + i)
-                  const isToday = dayDate.toDateString() === new Date().toDateString()
+                  const isToday = i === todayColIndex
                   return (
-                    <th key={d} className="text-center py-4 px-3 font-medium" style={{ color: isToday ? 'var(--brand-text)' : 'var(--text-secondary)' }}>
-                      <div>{d}</div>
+                    <th key={d} className="text-center py-4 px-3 font-medium" style={{ color: isToday ? 'var(--brand-text)' : 'var(--text-secondary)', backgroundColor: isToday ? TODAY_TINT : undefined }}>
+                      <div className="flex items-center justify-center gap-1.5">
+                        {d}
+                        {isToday && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: '#f59e0b', color: '#1c1917' }}>TODAY</span>}
+                      </div>
                       <div className="text-xs font-normal mt-0.5">{dayDate.getDate()}</div>
                     </th>
                   )
@@ -199,8 +209,8 @@ export function TimetableClient({ entries: initial, employees, role, weekStart: 
                       </div>
                     </div>
                   </td>
-                  {DAYS.map(day => (
-                    <td key={day} className="py-4 px-3 text-center">
+                  {DAYS.map((day, di) => (
+                    <td key={day} className="py-4 px-3 text-center" style={{ backgroundColor: di === todayColIndex ? TODAY_TINT : undefined }}>
                       {entry[day] ? (
                         <span className={cn('text-xs px-2.5 py-1.5 rounded-lg font-medium inline-block', shiftStyle(entry[day]))}>
                           {entry[day]}

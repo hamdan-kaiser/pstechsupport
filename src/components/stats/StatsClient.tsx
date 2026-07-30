@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import { gsap } from 'gsap'
 import toast from 'react-hot-toast'
 import * as XLSX from 'xlsx'
-import { BarChart3, Trophy, Phone, FileText, Plus, X, Check, Download, Upload } from 'lucide-react'
+import { BarChart3, Trophy, Phone, FileText, Plus, X, Check, Download, Upload, CalendarDays, Thermometer, DoorOpen } from 'lucide-react'
 import { cn, avatarColor } from '@/lib/utils'
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber'
 
@@ -142,12 +142,17 @@ export function StatsClient({ stats: initial, role, employees, currentMonth, cur
   }
 
   // Overall performance score out of 10: resolved cases count double (the outcome that
-  // matters most), created cases and inbound calls count once, normalized to the top performer.
+  // matters most), created cases and inbound calls count once, normalized to the top performer,
+  // then a flat 0.5-point penalty per sudden/early leave that month.
   const leaderboard = useMemo(() => {
     const weightedOf = (s: any) => s.casesCreated + s.casesResolved * 2 + s.inboundCalls
     const maxWeighted = Math.max(...stats.map(weightedOf), 1)
     return stats
-      .map(s => ({ ...s, score: Math.round((weightedOf(s) / maxWeighted) * 100) / 10 }))
+      .map(s => {
+        const base = (weightedOf(s) / maxWeighted) * 10
+        const penalty = (s.earlyLeaves ?? 0) * 0.5
+        return { ...s, score: Math.max(0, Math.round((base - penalty) * 10) / 10) }
+      })
       .sort((a, b) => b.score - a.score)
   }, [stats])
 
@@ -224,7 +229,7 @@ export function StatsClient({ stats: initial, role, employees, currentMonth, cur
             <Trophy className="w-5 h-5 text-amber-400" /> Leaderboard – Overall Performance
           </h2>
           <p className="text-xs mb-5" style={{ color: 'var(--text-muted)' }}>
-            Score out of 10, combining Cases Resolved (weighted x2), Cases Created, and Inbound Calls
+            Score out of 10, combining Cases Resolved (weighted x2), Cases Created, and Inbound Calls — minus 0.5 per Sudden Leave taken that month
           </p>
           <div className="space-y-3">
             {leaderboard.map((s, i) => (
@@ -272,6 +277,9 @@ export function StatsClient({ stats: initial, role, employees, currentMonth, cur
                 { label: 'Cases Resolved', value: s.casesResolved, icon: Check,    color: 'text-emerald-800 bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-500/15' },
                 { label: 'Inbound Calls',  value: s.inboundCalls,  icon: Phone,    color: 'text-amber-800 bg-amber-100 dark:text-amber-400 dark:bg-amber-500/15' },
                 { label: 'Outbound Calls', value: s.outboundCalls, icon: Phone,    color: 'text-purple-800 bg-purple-100 dark:text-purple-400 dark:bg-purple-500/15' },
+                { label: 'Holidays Taken', value: s.holidaysTaken ?? 0, icon: CalendarDays, color: 'text-cyan-800 bg-cyan-100 dark:text-cyan-400 dark:bg-cyan-500/15' },
+                { label: 'Sick Days',      value: s.sickDays ?? 0,      icon: Thermometer,  color: 'text-red-800 bg-red-100 dark:text-red-400 dark:bg-red-500/15' },
+                { label: 'Sudden Leaves',  value: s.earlyLeaves ?? 0,   icon: DoorOpen,      color: 'text-rose-800 bg-rose-100 dark:text-rose-400 dark:bg-rose-500/15' },
               ].map(({ label, value, icon: Icon, color }) => (
                 <div key={label} className="p-3 rounded-xl" style={{ backgroundColor: 'var(--bg-elevated)' }}>
                   <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center mb-2', color)}>

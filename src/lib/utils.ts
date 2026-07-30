@@ -25,13 +25,6 @@ export function diffDays(start: Date, end: Date) {
   return Math.ceil(ms / (1000 * 60 * 60 * 24)) + 1
 }
 
-export const SHIFT_TIMES = {
-  'early':  '08:00 - 16:00',
-  'mid':    '09:00 - 17:00',
-  'late':   '10:00 - 18:00',
-  'night':  '17:00 - 01:00',
-}
-
 export const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const
 export const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
@@ -49,6 +42,20 @@ export function splitShiftValue(val: string): { label: string; time: string | nu
   const match = val.match(/^(.*?)\s*\(([^)]+)\)\s*$/)
   if (match) return { label: match[1].trim(), time: match[2].replace('-', ' – ') }
   return { label: val, time: null }
+}
+
+/** Scheduled end time ("HH:MM", 24h) for each standard shift label, used to validate early-leave times */
+export const SHIFT_END_TIMES: Record<string, string> = {
+  '8am': '16:00',
+  '9am': '17:00',
+  '10am': '18:00',
+  '5pm': '01:00', // past midnight
+  '6pm': '02:00', // past midnight
+}
+export function getShiftEndTime(rawShiftValue: string | null | undefined): string | null {
+  if (!rawShiftValue) return null
+  const label = splitShiftValue(rawShiftValue).label.trim().toLowerCase()
+  return SHIFT_END_TIMES[label] ?? null
 }
 
 // ─── Shared style helpers ───────────────────────────────────────────────────

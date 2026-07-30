@@ -20,14 +20,16 @@ model User {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  holidayRequests  HolidayRequest[]
-  sickRequests     SickRequest[]
-  statsRecords     StatsRecord[]
-  timetableEntries TimetableEntry[]
-  swapRequestsFrom ShiftSwap[]      @relation("SwapFrom")
-  swapRequestsTo   ShiftSwap[]      @relation("SwapTo")
-  notifications    Notification[]
-  iqGameScore      IqGameScore?
+  holidayRequests        HolidayRequest[]
+  sickRequests           SickRequest[]
+  additionalShiftRequests AdditionalShiftRequest[]
+  earlyLeaveRequests     EarlyLeaveRequest[]
+  statsRecords           StatsRecord[]
+  timetableEntries       TimetableEntry[]
+  swapRequestsFrom       ShiftSwap[]      @relation("SwapFrom")
+  swapRequestsTo         ShiftSwap[]      @relation("SwapTo")
+  notifications          Notification[]
+  iqGameScore            IqGameScore?
 }
 
 model IqGameScore {
@@ -61,6 +63,31 @@ model SickRequest {
   startDate DateTime
   endDate   DateTime
   days      Int
+  reason    String
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AdditionalShiftRequest {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime
+  shift     String // the shift value they want to work that day, e.g. "8am"
+  reason    String
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EarlyLeaveRequest {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime
+  leaveTime String // e.g. "15:30" — the time they want to leave
+  shiftEnd  String // the shift's normal end time that day, e.g. "17:00", for reference/validation
   reason    String
   status    String   @default("pending")
   createdAt DateTime @default(now())

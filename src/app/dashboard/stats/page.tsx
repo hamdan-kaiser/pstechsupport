@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { StatsClient } from '@/components/stats/StatsClient'
+import { getMonthlyLeaveSummaryForUsers } from '@/lib/monthlyLeave'
 
 export default async function StatsPage() {
   const session = await getServerSession(authOptions)
@@ -11,7 +12,7 @@ export default async function StatsPage() {
   const month = now.getMonth() + 1
   const year = now.getFullYear()
 
-  const [stats, allEmployees] = await Promise.all([
+  const [rawStats, allEmployees] = await Promise.all([
     role === 'admin'
       ? prisma.statsRecord.findMany({
           where: { month, year },
@@ -23,6 +24,16 @@ export default async function StatsPage() {
       ? prisma.user.findMany({ select: { id: true, name: true }, orderBy: { name: 'asc' } })
       : [],
   ])
+
+  const stats = role === 'admin'
+    ? await (async () => {
+        const summaries = await getMonthlyLeaveSummaryForUsers(rawStats.map(s => s.userId), month, year)
+        return rawStats.map(s => ({ ...s, ...summaries[s.userId] }))
+      })()
+    : await Promise.all(rawStats.map(async s => {
+        const summary = await getMonthlyLeaveSummaryForUsers([userId], s.month, s.year)
+        return { ...s, ...summary[userId] }
+      }))
 
   return <StatsClient stats={stats} role={role} employees={allEmployees} currentMonth={month} currentYear={year} />
 }

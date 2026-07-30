@@ -6,7 +6,7 @@ import { gsap } from 'gsap'
 import { useEffect, useRef } from 'react'
 import {
   LayoutDashboard, CalendarDays, BarChart3, Clock, ArrowLeftRight,
-  Users, LogOut, Shield, Thermometer, Brain,
+  Users, LogOut, Shield, Thermometer, Brain, CalendarPlus, DoorOpen,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -14,6 +14,8 @@ const employeeLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/holidays', label: 'Holidays', icon: CalendarDays },
   { href: '/dashboard/sick-calls', label: 'Sick Calls', icon: Thermometer },
+  { href: '/dashboard/additional-shift', label: 'Additional Shift', icon: CalendarPlus },
+  { href: '/dashboard/sudden-leave', label: 'Sudden Leave', icon: DoorOpen },
   { href: '/dashboard/stats', label: 'My Stats', icon: BarChart3 },
   { href: '/dashboard/timetable', label: 'Timetable', icon: Clock },
   { href: '/dashboard/shift-swap', label: 'Shift Swap', icon: ArrowLeftRight },
@@ -24,6 +26,8 @@ const adminLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/holidays', label: 'Holidays', icon: CalendarDays },
   { href: '/dashboard/sick-calls', label: 'Sick Calls', icon: Thermometer },
+  { href: '/dashboard/additional-shift', label: 'Additional Shift', icon: CalendarPlus },
+  { href: '/dashboard/sudden-leave', label: 'Sudden Leave', icon: DoorOpen },
   { href: '/dashboard/stats', label: 'Stats & Leaderboard', icon: BarChart3 },
   { href: '/dashboard/timetable', label: 'Timetable', icon: Clock },
   { href: '/dashboard/shift-swap', label: 'Shift Swap', icon: ArrowLeftRight },
