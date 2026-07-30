@@ -3,7 +3,7 @@ import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { EmployeesClient } from '@/components/admin/EmployeesClient'
-import { getWeekStart, deriveShiftPeriod } from '@/lib/utils'
+import { getWeekStart, deriveRowStatus } from '@/lib/utils'
 import { getApprovedSickDaysForUsers } from '@/lib/sickUsage'
 
 const JS_DAY_KEYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const
@@ -28,7 +28,7 @@ export default async function EmployeesPage() {
   const employeesWithTodayShift = employees.map(emp => {
     const entry = timetableEntries.find(t => t.userId === emp.id) as any
     const todayValue = entry ? entry[todayKey] : null
-    return { ...emp, sickDays: sickDaysByUser[emp.id] ?? 0, todayShift: deriveShiftPeriod(todayValue) ?? emp.shift }
+    return { ...emp, sickDays: sickDaysByUser[emp.id] ?? 0, todayShift: deriveRowStatus(todayValue) }
   })
 
   return <EmployeesClient employees={employeesWithTodayShift} />

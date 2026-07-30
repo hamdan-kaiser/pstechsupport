@@ -1,8 +1,8 @@
 'use client'
 import { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
-import { CalendarDays, ArrowLeftRight, Sun, Moon, Clock, Thermometer } from 'lucide-react'
-import { formatDate, DAY_LABELS, DAYS, shiftStyle, shiftBadge, avatarColor, getTodayDayKey, splitShiftValue, deriveShiftPeriod } from '@/lib/utils'
+import { CalendarDays, ArrowLeftRight, Sun, Moon, Coffee, Clock, Thermometer } from 'lucide-react'
+import { formatDate, DAY_LABELS, DAYS, shiftStyle, shiftBadge, avatarColor, getTodayDayKey, splitShiftValue, deriveShiftPeriod, deriveRowStatus } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber'
@@ -36,7 +36,7 @@ export function DashboardClient({ user, allTimetables, pendingHolidays, pendingS
   const currentShift = (() => {
     if (!todayValue) return { label: 'Not scheduled', sub: 'No shift set for today', icon: Clock, accent: 'text-slate-700 bg-slate-200 dark:text-slate-300 dark:bg-slate-600/30' }
     const v = todayValue.toLowerCase()
-    if (v === 'off') return { label: 'Day Off', sub: 'Enjoy your day off', icon: Sun, accent: 'text-slate-700 bg-slate-200 dark:text-slate-300 dark:bg-slate-600/30' }
+    if (v === 'off') return { label: 'Day Off', sub: 'Enjoy your day off', icon: Coffee, accent: 'text-slate-700 bg-slate-200 dark:text-slate-300 dark:bg-slate-600/30' }
     if (v.includes('holiday')) return { label: 'On Holiday', sub: 'Approved holiday today', icon: CalendarDays, accent: 'text-emerald-800 bg-emerald-100 dark:text-emerald-300 dark:bg-emerald-500/20' }
     if (v.includes('sick')) return { label: 'Sick Leave', sub: 'Get well soon', icon: Clock, accent: 'text-red-800 bg-red-100 dark:text-red-300 dark:bg-red-500/20' }
     const { label, time } = splitShiftValue(todayValue)
@@ -133,7 +133,7 @@ export function DashboardClient({ user, allTimetables, pendingHolidays, pendingS
                 {allTimetables.map((entry, i) => {
                   const isMe = entry.userId === currentUserId
                   const rowTodayValue = todayColIndex >= 0 ? entry[DAYS[todayColIndex]] : null
-                  const rowPeriod = deriveShiftPeriod(rowTodayValue) ?? (entry.user?.shift === 'day' ? 'day' : 'night')
+                  const rowPeriod = deriveRowStatus(rowTodayValue)
                   return (
                   <tr key={entry.id ?? i} className={cn('timetable-row border-b transition-colors', isMe && 'my-row')} style={{ borderColor: 'var(--border-base)' }}
                     onMouseEnter={e => { if (!isMe) e.currentTarget.style.backgroundColor = 'var(--bg-elevated)' }}
@@ -148,7 +148,7 @@ export function DashboardClient({ user, allTimetables, pendingHolidays, pendingS
                             {entry.user?.name}
                             {isMe && <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: 'var(--brand)', color: 'white' }}>You</span>}
                           </p>
-                          <span className={cn('text-xs px-1.5 py-0.5 rounded-full', shiftBadge(rowPeriod))}>
+                          <span className={cn('text-xs px-1.5 py-0.5 rounded-full capitalize', shiftBadge(rowPeriod))}>
                             {rowPeriod}
                           </span>
                         </div>

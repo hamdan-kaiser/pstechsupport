@@ -223,12 +223,6 @@ export default function LoginPage() {
               {'> FORGOT_PASSWORD?'}
             </Link>
           </div>
-
-          <div className="mt-5 pt-4 border-t text-center" style={{ borderColor: COLOR.cyanBorderFaint }}>
-            <p className="text-xs font-mono" style={{ color: COLOR.mutedText }}>
-              DEFAULT_PASS: <span style={{ color: COLOR.mutedTextBright }}>password123</span>
-            </p>
-          </div>
         </div>
 
         <p className="mt-6 glow-credit">

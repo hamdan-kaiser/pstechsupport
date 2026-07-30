@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import toast from 'react-hot-toast'
-import { Plus, X, Check, Trash2, Edit2, Sun, Moon, Eye, EyeOff, KeyRound, Download, Upload } from 'lucide-react'
+import { Plus, X, Check, Trash2, Edit2, Sun, Moon, Coffee, Eye, EyeOff, KeyRound, Download, Upload } from 'lucide-react'
 import { formatDate, roleBadge, shiftBadge, avatarColor } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import { COLOR } from '@/lib/design'
@@ -275,10 +275,10 @@ export function EmployeesClient({ employees: initial }: { employees: any[] }) {
                   </span>
                 </td>
                 <td className="py-3 px-4">
-                  <span className={cn('flex items-center gap-1.5 text-xs font-medium w-fit px-2.5 py-1 rounded-full', shiftBadge(emp.todayShift ?? emp.shift))}
+                  <span className={cn('flex items-center gap-1.5 text-xs font-medium w-fit px-2.5 py-1 rounded-full capitalize', shiftBadge(emp.todayShift))}
                     title="Derived from today's timetable entry">
-                    {(emp.todayShift ?? emp.shift) === 'day' ? <Sun className="w-3 h-3" /> : <Moon className="w-3 h-3" />}
-                    {emp.todayShift ?? emp.shift}
+                    {emp.todayShift === 'day' ? <Sun className="w-3 h-3" /> : emp.todayShift === 'night' ? <Moon className="w-3 h-3" /> : <Coffee className="w-3 h-3" />}
+                    {emp.todayShift}
                   </span>
                 </td>
                 <td className="py-3 px-4">

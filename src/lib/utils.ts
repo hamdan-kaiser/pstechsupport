@@ -81,11 +81,11 @@ export function roleBadge(role: string): string {
   return 'bg-slate-200 text-slate-800 dark:bg-slate-600/40 dark:text-slate-200'
 }
 
-/** Tailwind classes for a shift badge (day/night) */
-export function shiftBadge(shift: string): string {
-  return shift === 'day'
-    ? 'bg-amber-100 text-amber-800 dark:bg-amber-500/25 dark:text-amber-300'
-    : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-500/25 dark:text-indigo-300'
+/** Tailwind classes for a shift badge (day/night/off) */
+export function shiftBadge(status: string): string {
+  if (status === 'day')   return 'bg-amber-100 text-amber-800 dark:bg-amber-500/25 dark:text-amber-300'
+  if (status === 'night') return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-500/25 dark:text-indigo-300'
+  return 'bg-slate-200 text-slate-700 dark:bg-slate-500/25 dark:text-slate-200' // off
 }
 
 /** Derive a day/night indicator from an actual timetable shift value (e.g. "8am (08:00-16:00)", "5pm (17:00-01:00)") */
@@ -96,6 +96,12 @@ export function deriveShiftPeriod(val: string | null | undefined): 'day' | 'nigh
   if (v.includes('pm') || v.includes('night') || v.includes('5pm') || v.includes('6pm')) return 'night'
   if (v.includes('am') || v.includes('day')) return 'day'
   return null
+}
+
+/** Same as deriveShiftPeriod, but explicit about the "off" case (OFF/Holiday/Sick/unscheduled)
+ *  instead of returning null — for badges that need a real third state rather than a guess. */
+export function deriveRowStatus(val: string | null | undefined): 'day' | 'night' | 'off' {
+  return deriveShiftPeriod(val) ?? 'off'
 }
 
 /** Consistent avatar bg colour cycling through a palette by first letter */

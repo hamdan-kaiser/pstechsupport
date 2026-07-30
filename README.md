@@ -4,14 +4,14 @@ A full-featured employee management portal built with Next.js 14, Prisma (SQLite
 
 ## Features
 
-- 🔐 **Authentication** — Email/password login for employees and admins
-- 📅 **Holiday Management** — Request days off, admin approval with notifications
-- 📊 **Stats & Leaderboard** — Monthly case/call stats with ranked leaderboard
-- 🗓️ **Timetable** — Weekly schedule view; admin uploads via Excel file
-- 🔄 **Shift Swap** — Full 3-step swap flow (requester → target accept → admin approve)
-- 🔔 **Notifications** — Real-time bell icon for all actions
-- 👥 **Employee Management** — Admin can add/edit/remove employees
-- ✨ **GSAP Animations** — Smooth transitions throughout
+- **Authentication** — Email/password login for employees and admins
+- **Holiday Management** — Request days off, admin approval with notifications
+- **Stats & Leaderboard** — Monthly case/call stats with ranked leaderboard
+- **Timetable** — Weekly schedule view; admin uploads via Excel file
+- **Shift Swap** — Full 3-step swap flow (requester → target accept → admin approve)
+- **Notifications** — Real-time bell icon for all actions
+- **Employee Management** — Admin can add/edit/remove employees
+- **GSAP Animations** — Smooth transitions throughout
 
 ## Quick Start
 
