@@ -3,28 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { createNotification } from '@/lib/notifications'
-import { getWeekStart } from '@/lib/utils'
-
-const JS_DAY_KEYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const
-
-async function markTimetableRange(userId: string, startDate: Date, endDate: Date, value: string) {
-  const updates = []
-  const cur = new Date(startDate)
-  const end = new Date(endDate)
-  while (cur <= end) {
-    const weekStart = getWeekStart(cur)
-    const dayKey = JS_DAY_KEYS[cur.getDay()]
-    updates.push(
-      prisma.timetableEntry.upsert({
-        where: { userId_weekStart: { userId, weekStart } },
-        update: { [dayKey]: value },
-        create: { userId, weekStart, [dayKey]: value },
-      })
-    )
-    cur.setDate(cur.getDate() + 1)
-  }
-  await Promise.all(updates)
-}
+import { snapshotTimetableRange, markTimetableRange, restoreTimetableSnapshot } from '@/lib/timetableRange'
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
@@ -37,16 +16,23 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   const sick = await prisma.sickRequest.findUnique({ where: { id: params.id }, include: { user: true } })
   if (!sick) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
+  const wasApproved = sick.status === 'approved'
   await prisma.sickRequest.update({ where: { id: params.id }, data: { status } })
 
-  if (status === 'approved') {
+  if (status === 'approved' && !wasApproved) {
+    const previousValues = await snapshotTimetableRange(sick.userId, sick.startDate, sick.endDate)
+    await prisma.sickRequest.update({ where: { id: params.id }, data: { previousValues } })
     await markTimetableRange(sick.userId, sick.startDate, sick.endDate, 'Sick Off')
+  } else if (status !== 'approved' && wasApproved) {
+    await restoreTimetableSnapshot(sick.userId, sick.previousValues)
   }
 
   await createNotification(
     sick.userId,
     `Sick Call ${status === 'approved' ? 'Approved ✅' : 'Rejected ❌'}`,
-    `Your sick call for ${sick.days} day(s) has been ${status}.`,
+    wasApproved && status !== 'approved'
+      ? `Your previously approved sick call for ${sick.days} day(s) has been reversed. Your timetable has been restored.`
+      : `Your sick call for ${sick.days} day(s) has been ${status}.`,
     status === 'approved' ? 'success' : 'error'
   )
 

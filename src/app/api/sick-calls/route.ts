@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { notifyAllAdmins } from '@/lib/notifications'
 import { diffDays } from '@/lib/utils'
+import { findLeaveConflict } from '@/lib/leaveConflict'
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -31,10 +32,15 @@ export async function POST(req: Request) {
   const user = await prisma.user.findUnique({ where: { id: userId } })
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
-  const days = diffDays(new Date(startDate), new Date(endDate))
+  const startDateObj = new Date(startDate)
+  const endDateObj = new Date(endDate)
+  const conflict = await findLeaveConflict(userId, startDateObj, endDateObj)
+  if (conflict) return NextResponse.json({ error: conflict }, { status: 409 })
+
+  const days = diffDays(startDateObj, endDateObj)
 
   const request = await prisma.sickRequest.create({
-    data: { userId, startDate: new Date(startDate), endDate: new Date(endDate), days, reason },
+    data: { userId, startDate: startDateObj, endDate: endDateObj, days, reason },
   })
 
   await notifyAllAdmins(

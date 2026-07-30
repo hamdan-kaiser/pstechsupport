@@ -3,28 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { createNotification } from '@/lib/notifications'
-import { getWeekStart } from '@/lib/utils'
-
-const JS_DAY_KEYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const
-
-async function markTimetableRange(userId: string, startDate: Date, endDate: Date, value: string) {
-  const updates = []
-  const cur = new Date(startDate)
-  const end = new Date(endDate)
-  while (cur <= end) {
-    const weekStart = getWeekStart(cur)
-    const dayKey = JS_DAY_KEYS[cur.getDay()]
-    updates.push(
-      prisma.timetableEntry.upsert({
-        where: { userId_weekStart: { userId, weekStart } },
-        update: { [dayKey]: value },
-        create: { userId, weekStart, [dayKey]: value },
-      })
-    )
-    cur.setDate(cur.getDate() + 1)
-  }
-  await Promise.all(updates)
-}
+import { snapshotTimetableRange, markTimetableRange, restoreTimetableSnapshot } from '@/lib/timetableRange'
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
@@ -40,20 +19,31 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   })
   if (!holiday) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
+  const wasApproved = holiday.status === 'approved'
   await prisma.holidayRequest.update({ where: { id: params.id }, data: { status } })
 
-  if (status === 'approved') {
-    await prisma.user.update({
-      where: { id: holiday.userId },
-      data: { usedHolidays: { increment: holiday.days } },
-    })
+  if (status === 'approved' && !wasApproved) {
+    // Forward: snapshot what the timetable looked like before, then mark it Holiday.
+    const previousValues = await snapshotTimetableRange(holiday.userId, holiday.startDate, holiday.endDate)
+    await prisma.holidayRequest.update({ where: { id: params.id }, data: { previousValues } })
+    await prisma.user.update({ where: { id: holiday.userId }, data: { usedHolidays: { increment: holiday.days } } })
     await markTimetableRange(holiday.userId, holiday.startDate, holiday.endDate, 'Holiday')
+  } else if (status !== 'approved' && wasApproved) {
+    // Reverse: an already-approved holiday is being un-approved — restore the timetable and give the days back.
+    await restoreTimetableSnapshot(holiday.userId, holiday.previousValues)
+    await prisma.user.update({ where: { id: holiday.userId }, data: { usedHolidays: { decrement: holiday.days } } })
+    const refreshed = await prisma.user.findUnique({ where: { id: holiday.userId }, select: { usedHolidays: true } })
+    if (refreshed && refreshed.usedHolidays < 0) {
+      await prisma.user.update({ where: { id: holiday.userId }, data: { usedHolidays: 0 } })
+    }
   }
 
   await createNotification(
     holiday.userId,
     `Holiday Request ${status === 'approved' ? 'Approved ✅' : 'Rejected ❌'}`,
-    `Your holiday request for ${holiday.days} day(s) has been ${status}.`,
+    wasApproved && status !== 'approved'
+      ? `Your previously approved holiday request for ${holiday.days} day(s) has been reversed. Your timetable and holiday balance have been restored.`
+      : `Your holiday request for ${holiday.days} day(s) has been ${status}.`,
     status === 'approved' ? 'success' : 'error'
   )
 

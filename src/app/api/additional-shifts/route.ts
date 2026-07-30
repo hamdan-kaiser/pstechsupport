@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { notifyAllAdmins } from '@/lib/notifications'
 import { getWeekStart, getDayKey } from '@/lib/utils'
+import { findLeaveConflict } from '@/lib/leaveConflict'
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -37,6 +38,9 @@ export async function POST(req: Request) {
   if (currentValue && currentValue.toLowerCase() !== 'off') {
     return NextResponse.json({ error: 'You can only request an additional shift on a day you are scheduled OFF' }, { status: 400 })
   }
+
+  const conflict = await findLeaveConflict(userId, dateObj, dateObj)
+  if (conflict) return NextResponse.json({ error: conflict }, { status: 409 })
 
   const user = await prisma.user.findUnique({ where: { id: userId } })
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })

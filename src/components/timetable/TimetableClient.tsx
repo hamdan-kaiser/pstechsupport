@@ -4,7 +4,7 @@ import { gsap } from 'gsap'
 import toast from 'react-hot-toast'
 import * as XLSX from 'xlsx'
 import { Clock, Upload, Download, Sun, Moon, ChevronLeft, ChevronRight } from 'lucide-react'
-import { cn, DAYS, DAY_LABELS, getWeekStart, shiftStyle, shiftBadge, avatarColor } from '@/lib/utils'
+import { cn, DAYS, DAY_LABELS, getWeekStart, shiftStyle, avatarColor, deriveShiftPeriod } from '@/lib/utils'
 
 interface Props { entries: any[]; employees: any[]; role: string; weekStart: string; currentUserId: string }
 
@@ -186,6 +186,10 @@ export function TimetableClient({ entries: initial, employees, role, weekStart: 
             <tbody>
               {entries.map((entry, i) => {
                 const isMe = entry.userId === currentUserId
+                // Prefer today's actual scheduled value over the static day/night field, which
+                // can go stale (e.g. after shift swaps or Excel re-uploads change the real schedule).
+                const todayValue = todayColIndex >= 0 ? entry[DAYS[todayColIndex]] : null
+                const period = deriveShiftPeriod(todayValue) ?? (entry.user?.shift === 'day' ? 'day' : 'night')
                 return (
                 <tr key={entry.id ?? i} className={cn('tt-row border-b transition-colors', isMe && 'my-row')} style={{ borderColor: 'var(--border-base)' }}
                   onMouseEnter={e => { if (!isMe) e.currentTarget.style.backgroundColor = 'var(--bg-elevated)' }}
@@ -201,7 +205,7 @@ export function TimetableClient({ entries: initial, employees, role, weekStart: 
                           {isMe && <span className="text-xs font-semibold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: 'var(--brand)', color: 'white' }}>You</span>}
                         </p>
                         <div className="flex items-center gap-1 mt-0.5">
-                          {entry.user?.shift === 'day'
+                          {period === 'day'
                             ? <><Sun className="w-3 h-3 text-amber-400" /><span className="text-xs text-amber-400">Day</span></>
                             : <><Moon className="w-3 h-3 text-indigo-400" /><span className="text-xs text-indigo-400">Night</span></>
                           }

@@ -132,6 +132,8 @@ export function DashboardClient({ user, allTimetables, pendingHolidays, pendingS
               <tbody>
                 {allTimetables.map((entry, i) => {
                   const isMe = entry.userId === currentUserId
+                  const rowTodayValue = todayColIndex >= 0 ? entry[DAYS[todayColIndex]] : null
+                  const rowPeriod = deriveShiftPeriod(rowTodayValue) ?? (entry.user?.shift === 'day' ? 'day' : 'night')
                   return (
                   <tr key={entry.id ?? i} className={cn('timetable-row border-b transition-colors', isMe && 'my-row')} style={{ borderColor: 'var(--border-base)' }}
                     onMouseEnter={e => { if (!isMe) e.currentTarget.style.backgroundColor = 'var(--bg-elevated)' }}
@@ -146,8 +148,8 @@ export function DashboardClient({ user, allTimetables, pendingHolidays, pendingS
                             {entry.user?.name}
                             {isMe && <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: 'var(--brand)', color: 'white' }}>You</span>}
                           </p>
-                          <span className={cn('text-xs px-1.5 py-0.5 rounded-full', shiftBadge(entry.user?.shift ?? 'day'))}>
-                            {entry.user?.shift}
+                          <span className={cn('text-xs px-1.5 py-0.5 rounded-full', shiftBadge(rowPeriod))}>
+                            {rowPeriod}
                           </span>
                         </div>
                       </div>

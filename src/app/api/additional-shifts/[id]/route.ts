@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { createNotification } from '@/lib/notifications'
-import { getWeekStart, getDayKey } from '@/lib/utils'
+import { snapshotTimetableRange, markTimetableRange, restoreTimetableSnapshot } from '@/lib/timetableRange'
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
@@ -16,31 +16,31 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   const request = await prisma.additionalShiftRequest.findUnique({ where: { id: params.id }, include: { user: true } })
   if (!request) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
+  const wasApproved = request.status === 'approved'
   await prisma.additionalShiftRequest.update({ where: { id: params.id }, data: { status } })
 
-  if (status === 'approved') {
-    const weekStart = getWeekStart(request.date)
-    const dayKey = getDayKey(request.date)
-    await prisma.timetableEntry.upsert({
-      where: { userId_weekStart: { userId: request.userId, weekStart } },
-      update: { [dayKey]: request.shift },
-      create: { userId: request.userId, weekStart, [dayKey]: request.shift },
-    })
+  if (status === 'approved' && !wasApproved) {
+    const previousValues = await snapshotTimetableRange(request.userId, request.date, request.date)
+    await prisma.additionalShiftRequest.update({ where: { id: params.id }, data: { previousValues } })
+    await markTimetableRange(request.userId, request.date, request.date, request.shift)
     // Working an additional day off gives back a holiday day, floored at 0
-    await prisma.user.update({
-      where: { id: request.userId },
-      data: { usedHolidays: { decrement: 1 } },
-    })
+    await prisma.user.update({ where: { id: request.userId }, data: { usedHolidays: { decrement: 1 } } })
     const refreshed = await prisma.user.findUnique({ where: { id: request.userId }, select: { usedHolidays: true } })
     if (refreshed && refreshed.usedHolidays < 0) {
       await prisma.user.update({ where: { id: request.userId }, data: { usedHolidays: 0 } })
     }
+  } else if (status !== 'approved' && wasApproved) {
+    // Reverse: restore the timetable and take back the holiday day that was credited.
+    await restoreTimetableSnapshot(request.userId, request.previousValues)
+    await prisma.user.update({ where: { id: request.userId }, data: { usedHolidays: { increment: 1 } } })
   }
 
   await createNotification(
     request.userId,
     `Additional Shift ${status === 'approved' ? 'Approved ✅' : 'Rejected ❌'}`,
-    `Your additional shift request for ${request.date.toLocaleDateString()} has been ${status}.`,
+    wasApproved && status !== 'approved'
+      ? `Your previously approved additional shift for ${request.date.toLocaleDateString()} has been reversed. Your timetable and holiday balance have been restored.`
+      : `Your additional shift request for ${request.date.toLocaleDateString()} has been ${status}.`,
     status === 'approved' ? 'success' : 'error'
   )
 
