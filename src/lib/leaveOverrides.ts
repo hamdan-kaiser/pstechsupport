@@ -15,8 +15,7 @@ export async function getLeaveOverridesForWeek(userId: string, weekStart: Date):
   const inRange = (date: Date, start: Date, end: Date) => date >= start && date <= end
 
   DAYS.forEach((dayKey, i) => {
-    const date = new Date(weekStart)
-    date.setDate(date.getDate() + i)
+    const date = new Date(weekStart.getTime() + i * 24 * 60 * 60 * 1000)
     if (sicks.some(s => inRange(date, s.startDate, s.endDate))) overrides[dayKey] = 'Sick Off'
     else if (holidays.some(h => inRange(date, h.startDate, h.endDate))) overrides[dayKey] = 'Holiday'
   })

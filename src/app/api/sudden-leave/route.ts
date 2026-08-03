@@ -3,7 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { notifyAllAdmins } from '@/lib/notifications'
-import { getWeekStart, getDayKey, getShiftEndTime } from '@/lib/utils'
+import { getDayKey, getShiftEndTime } from '@/lib/utils'
+import { getEffectiveDayValue } from '@/lib/timetableResolve'
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -30,11 +31,9 @@ export async function POST(req: Request) {
   if (!leaveTime || !reason) return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
 
   const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const weekStart = getWeekStart(today)
+  today.setUTCHours(0, 0, 0, 0)
   const dayKey = getDayKey(today)
-  const entry = await prisma.timetableEntry.findUnique({ where: { userId_weekStart: { userId, weekStart } } })
-  const todayShift = entry ? ((entry as any)[dayKey] as string | null) : null
+  const todayShift = await getEffectiveDayValue(userId, today, dayKey)
   const shiftEnd = getShiftEndTime(todayShift)
 
   if (!shiftEnd) return NextResponse.json({ error: "You don't have a recognized shift scheduled today" }, { status: 400 })

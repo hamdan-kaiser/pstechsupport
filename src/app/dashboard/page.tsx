@@ -3,6 +3,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { DashboardClient } from '@/components/dashboard/DashboardClient'
 import { getWeekStart } from '@/lib/utils'
+import { getEffectiveTimetableForWeek } from '@/lib/timetableResolve'
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
@@ -25,10 +26,7 @@ export default async function DashboardPage() {
 
   // Everyone sees the full team's timetable for the current week
   const weekStart = getWeekStart()
-  const allTimetables = await prisma.timetableEntry.findMany({
-    where: { weekStart },
-    include: { user: { select: { name: true, shift: true } } },
-  })
+  const allTimetables = await getEffectiveTimetableForWeek(weekStart)
 
   return (
     <DashboardClient

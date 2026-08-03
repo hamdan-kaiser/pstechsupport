@@ -3,8 +3,9 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { notifyAllAdmins } from '@/lib/notifications'
-import { getWeekStart, getDayKey } from '@/lib/utils'
+import { getDayKey } from '@/lib/utils'
 import { findLeaveConflict } from '@/lib/leaveConflict'
+import { getEffectiveDayValue } from '@/lib/timetableResolve'
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -31,10 +32,8 @@ export async function POST(req: Request) {
   if (!date || !shift || !reason) return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
 
   const dateObj = new Date(date)
-  const weekStart = getWeekStart(dateObj)
   const dayKey = getDayKey(dateObj)
-  const entry = await prisma.timetableEntry.findUnique({ where: { userId_weekStart: { userId, weekStart } } })
-  const currentValue = entry ? ((entry as any)[dayKey] as string | null) : null
+  const currentValue = await getEffectiveDayValue(userId, dateObj, dayKey)
   if (currentValue && currentValue.toLowerCase() !== 'off') {
     return NextResponse.json({ error: 'You can only request an additional shift on a day you are scheduled OFF' }, { status: 400 })
   }

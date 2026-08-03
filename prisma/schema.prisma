@@ -114,19 +114,22 @@ model StatsRecord {
 }
 
 model TimetableEntry {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  weekStart DateTime
-  monday    String?
-  tuesday   String?
-  wednesday String?
-  thursday  String?
-  friday    String?
-  saturday  String?
-  sunday    String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weekStart     DateTime
+  monday        String?
+  tuesday       String?
+  wednesday     String?
+  thursday      String?
+  friday        String?
+  saturday      String?
+  sunday        String?
+  overrideDays  Json? // day-keys in this row set by a one-off Holiday/Sick/Additional-Shift
+                       // approval rather than a recurring schedule upload — excluded when
+                       // carrying a schedule forward into later weeks
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@unique([userId, weekStart])
 }

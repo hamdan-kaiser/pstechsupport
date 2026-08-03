@@ -2,7 +2,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { SuddenLeaveClient } from '@/components/suddenleave/SuddenLeaveClient'
-import { getWeekStart, getDayKey, getShiftEndTime } from '@/lib/utils'
+import { getDayKey, getShiftEndTime } from '@/lib/utils'
+import { getEffectiveDayValue } from '@/lib/timetableResolve'
 
 export default async function SuddenLeavePage() {
   const session = await getServerSession(authOptions)
@@ -16,11 +17,9 @@ export default async function SuddenLeavePage() {
   })
 
   const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const weekStart = getWeekStart(today)
+  today.setUTCHours(0, 0, 0, 0)
   const dayKey = getDayKey(today)
-  const entry = await prisma.timetableEntry.findUnique({ where: { userId_weekStart: { userId, weekStart } } })
-  const todayShift = entry ? ((entry as any)[dayKey] as string | null) : null
+  const todayShift = await getEffectiveDayValue(userId, today, dayKey)
   const shiftEnd = getShiftEndTime(todayShift)
 
   return <SuddenLeaveClient requests={requests} role={role} todayShift={todayShift} shiftEnd={shiftEnd} />

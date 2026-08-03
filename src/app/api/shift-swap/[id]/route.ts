@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { createNotification, notifyAllAdmins, notifyAllEmployees } from '@/lib/notifications'
+import { markTimetableRange } from '@/lib/timetableRange'
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
@@ -45,27 +46,13 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   if (action === 'admin_approve') {
     await prisma.shiftSwap.update({ where: { id: params.id }, data: { adminApproved: 'approved', status: 'approved' } })
 
-    // Update timetable entries for both users
+    // Update timetable entries for both users — flagged as one-off overrides (via
+    // markTimetableRange) so this specific-date swap doesn't get carried forward as if it
+    // were a permanent change to either person's recurring schedule.
     const swapDateObj = new Date(swap.swapDate)
-    const dayName = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'][swapDateObj.getDay()]
-
-    // Find week start for that date
-    const d = new Date(swapDateObj)
-    const diff = d.getDate() - d.getDay() + (d.getDay() === 0 ? -6 : 1)
-    d.setDate(diff); d.setHours(0,0,0,0)
-    const weekStart = d
-
     await Promise.all([
-      prisma.timetableEntry.upsert({
-        where: { userId_weekStart: { userId: swap.requesterId, weekStart } },
-        update: { [dayName]: swap.targetShift },
-        create: { userId: swap.requesterId, weekStart, [dayName]: swap.targetShift },
-      }),
-      prisma.timetableEntry.upsert({
-        where: { userId_weekStart: { userId: swap.targetId, weekStart } },
-        update: { [dayName]: swap.requesterShift },
-        create: { userId: swap.targetId, weekStart, [dayName]: swap.requesterShift },
-      }),
+      markTimetableRange(swap.requesterId, swapDateObj, swapDateObj, swap.targetShift),
+      markTimetableRange(swap.targetId, swapDateObj, swapDateObj, swap.requesterShift),
     ])
 
     await Promise.all([

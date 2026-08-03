@@ -11,13 +11,15 @@ export function formatDate(date: Date | string) {
   return `${String(d.getUTCDate()).padStart(2,'0')} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`
 }
 
+// Uses UTC methods throughout (not local Date methods) so this always computes the same
+// Monday-midnight instant regardless of the server or browser's local timezone — critical since
+// weekStart values are compared for exact equality across the app (timetable lookups, carry
+// forward, unique constraints).
 export function getWeekStart(date: Date = new Date()) {
   const d = new Date(date)
-  const day = d.getDay()
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1)
-  d.setDate(diff)
-  d.setHours(0, 0, 0, 0)
-  return d
+  const day = d.getUTCDay()
+  const diff = d.getUTCDate() - day + (day === 0 ? -6 : 1)
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), diff, 0, 0, 0, 0))
 }
 
 export function diffDays(start: Date, end: Date) {
@@ -28,10 +30,11 @@ export function diffDays(start: Date, end: Date) {
 export const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const
 export const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
-/** Maps JS Date.getDay() (0=Sunday) to the timetable's day-of-week field name */
+/** Maps JS Date.getUTCDay() (0=Sunday) to the timetable's day-of-week field name.
+ *  Uses UTC to match getWeekStart's timezone-independent computation. */
 export const JS_DAY_KEYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const
 export function getDayKey(date: Date): typeof JS_DAY_KEYS[number] {
-  return JS_DAY_KEYS[date.getDay()]
+  return JS_DAY_KEYS[date.getUTCDay()]
 }
 export function getTodayDayKey(): typeof JS_DAY_KEYS[number] {
   return getDayKey(new Date())

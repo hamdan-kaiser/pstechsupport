@@ -3,6 +3,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { TimetableClient } from '@/components/timetable/TimetableClient'
 import { getWeekStart } from '@/lib/utils'
+import { getEffectiveTimetableForWeek } from '@/lib/timetableResolve'
 
 export default async function TimetablePage() {
   const session = await getServerSession(authOptions)
@@ -11,11 +12,7 @@ export default async function TimetablePage() {
   const weekStart = getWeekStart()
 
   const [entries, employees] = await Promise.all([
-    prisma.timetableEntry.findMany({
-      where: { weekStart },
-      include: { user: { select: { name: true, shift: true } } },
-      orderBy: { user: { name: 'asc' } },
-    }),
+    getEffectiveTimetableForWeek(weekStart),
     role === 'admin'
       ? prisma.user.findMany({ select: { id: true, name: true, shift: true }, orderBy: { name: 'asc' } })
       : [],
