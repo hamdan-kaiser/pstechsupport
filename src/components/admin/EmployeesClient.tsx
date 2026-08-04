@@ -142,23 +142,23 @@ export function EmployeesClient({ employees: initial }: { employees: any[] }) {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Employees</h1>
           <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{employees.length} team members</p>
         </div>
-      <div className="flex items-center gap-2">
-        <button onClick={openAdd} className="btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" /> Add Employee
-        </button>
-        <button onClick={handleDownload} className="btn-secondary flex items-center gap-2">
-          <Download className="w-4 h-4" /> Download
-        </button>
-        <input ref={uploadRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleUpload} />
-        <button onClick={() => uploadRef.current?.click()} className="btn-secondary flex items-center gap-2">
-          <Upload className="w-4 h-4" /> Upload
-        </button>
-      </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <button onClick={openAdd} className="btn-primary flex items-center gap-2">
+            <Plus className="w-4 h-4" /> Add Employee
+          </button>
+          <button onClick={handleDownload} className="btn-secondary flex items-center gap-2">
+            <Download className="w-4 h-4" /> Download
+          </button>
+          <input ref={uploadRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleUpload} />
+          <button onClick={() => uploadRef.current?.click()} className="btn-secondary flex items-center gap-2">
+            <Upload className="w-4 h-4" /> Upload
+          </button>
+        </div>
       </div>
 
       {isFormOpen && (

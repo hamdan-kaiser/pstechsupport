@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
-import { Bell, X, Check, CheckCheck } from 'lucide-react'
+import { Bell, X, Check, CheckCheck, Menu } from 'lucide-react'
 import { gsap } from 'gsap'
 import toast from 'react-hot-toast'
 import { useAppStore } from '@/store/appStore'
@@ -57,7 +57,7 @@ export function TopBar({ user }: TopBarProps) {
   const [actioningId, setActioningId] = useState<string | null>(null)
   const panelRef = useRef<HTMLDivElement>(null)
   const bellRef = useRef<HTMLButtonElement>(null)
-  const { notifications, unreadCount, setNotifications, markRead, markAllRead } = useAppStore()
+  const { notifications, unreadCount, setNotifications, markRead, markAllRead, openMobileSidebar } = useAppStore()
 
   useEffect(() => {
     fetchNotifications()
@@ -127,13 +127,18 @@ export function TopBar({ user }: TopBarProps) {
   }
 
   return (
-    <header className="h-16 border-b flex items-center justify-between px-6 shrink-0" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-base)' }}>
-      <div>
-        <p className="font-semibold t-primary">Welcome back, {user.name?.split(' ')[0]}</p>
-        <p className="t-muted text-xs">{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
+    <header className="h-16 border-b flex items-center justify-between px-3 sm:px-6 shrink-0 gap-2" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-base)' }}>
+      <div className="flex items-center gap-2 min-w-0">
+        <button onClick={openMobileSidebar} className="p-2 -ml-1 rounded-lg shrink-0 lg:hidden" style={{ color: 'var(--text-secondary)' }}>
+          <Menu className="w-5 h-5" />
+        </button>
+        <div className="min-w-0">
+          <p className="font-semibold t-primary truncate">Welcome back, {user.name?.split(' ')[0]}</p>
+          <p className="t-muted text-xs hidden sm:block">{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
+        </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4 shrink-0">
         <ThemeToggle />
         <div className="relative">
           <button
@@ -153,7 +158,7 @@ export function TopBar({ user }: TopBarProps) {
           {open && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-              <div ref={panelRef} className="absolute right-0 top-12 w-96 rounded-2xl shadow-2xl z-50 overflow-hidden border" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}>
+              <div ref={panelRef} className="fixed sm:absolute left-2 right-2 sm:left-auto sm:right-0 top-16 sm:top-12 w-auto sm:w-96 rounded-2xl shadow-2xl z-50 overflow-hidden border" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}>
                 <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: 'var(--border-base)' }}>
                   <h3 className="font-semibold t-primary">Notifications</h3>
                   <div className="flex items-center gap-2">

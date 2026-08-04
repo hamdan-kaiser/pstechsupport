@@ -129,21 +129,21 @@ export default function LoginPage() {
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full pointer-events-none"
         style={STYLES.orbRight} />
 
-      {/* Corner HUD */}
-      <div className="absolute top-4 left-4 text-cyan-500/30 font-mono text-xs pointer-events-none z-10 select-none leading-5">
+      {/* Corner HUD — decorative only, hidden on small screens to avoid crowding the login card */}
+      <div className="hidden sm:block absolute top-4 left-4 text-cyan-500/30 font-mono text-xs pointer-events-none z-10 select-none leading-5">
         <div>SYS://PORTAL.AUTH</div>
         <div>STATUS: ONLINE ▮</div>
         <div>ENCRYPTION: AES-256</div>
       </div>
-      <div className="absolute top-4 right-4 text-cyan-500/30 font-mono text-xs pointer-events-none z-10 select-none text-right leading-5">
+      <div className="hidden sm:block absolute top-4 right-4 text-cyan-500/30 font-mono text-xs pointer-events-none z-10 select-none text-right leading-5">
         <div>v2.4.1</div>
         <div suppressHydrationWarning>{new Date().toLocaleDateString('en-GB')}</div>
         <div className="animate-pulse">● SECURE</div>
       </div>
-      <div className="absolute bottom-4 left-4 text-cyan-500/20 font-mono text-xs pointer-events-none z-10 select-none">
+      <div className="hidden sm:block absolute bottom-4 left-4 text-cyan-500/20 font-mono text-xs pointer-events-none z-10 select-none">
         {'> AWAITING_INPUT_'}<span className="animate-pulse">▮</span>
       </div>
-      <div className="absolute bottom-4 right-4 text-cyan-500/20 font-mono text-xs pointer-events-none z-10 select-none">
+      <div className="hidden sm:block absolute bottom-4 right-4 text-cyan-500/20 font-mono text-xs pointer-events-none z-10 select-none">
         TEAM_PORTAL © 2025
       </div>
 

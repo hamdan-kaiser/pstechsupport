@@ -118,7 +118,7 @@ export function TimetableClient({ entries: initial, employees, role, weekStart: 
           <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Timetable</h1>
           <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{weekLabel} – {weekEndLabel}</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-1 rounded-xl p-1" style={{ backgroundColor: 'var(--bg-elevated)' }}>
             <button onClick={() => changeWeek(-1)} className="p-2 rounded-lg transition-colors" style={{ color: 'var(--text-secondary)' }}
               onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--bg-hover)')}

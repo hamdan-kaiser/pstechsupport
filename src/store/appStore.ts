@@ -16,10 +16,13 @@ interface AppStore {
   notifications: Notification[]
   unreadCount: number
   theme: 'dark' | 'light'
+  mobileSidebarOpen: boolean
   setNotifications: (n: Notification[]) => void
   markRead: (id: string) => void
   markAllRead: () => void
   toggleTheme: () => void
+  openMobileSidebar: () => void
+  closeMobileSidebar: () => void
 }
 
 export const useAppStore = create<AppStore>()(
@@ -28,6 +31,7 @@ export const useAppStore = create<AppStore>()(
       notifications: [],
       unreadCount: 0,
       theme: 'dark',
+      mobileSidebarOpen: false,
       setNotifications: (notifications) =>
         set({ notifications, unreadCount: notifications.filter(n => !n.read).length }),
       markRead: (id) =>
@@ -47,6 +51,8 @@ export const useAppStore = create<AppStore>()(
           document.documentElement.classList.add(next)
           return { theme: next }
         }),
+      openMobileSidebar: () => set({ mobileSidebarOpen: true }),
+      closeMobileSidebar: () => set({ mobileSidebarOpen: false }),
     }),
     { name: 'portal-theme', partialize: (s) => ({ theme: s.theme }) }
   )

@@ -171,7 +171,7 @@ export function ShiftSwapClient({ swaps: initial, employees, role, currentUserId
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Shift Swap</h1>
           <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Request to swap shifts with a colleague</p>

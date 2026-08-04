@@ -198,7 +198,7 @@ function MagicKeyContent() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="flex justify-center gap-4">
+            <div className="flex justify-center gap-2 sm:gap-4">
               {digits.map((d, i) => (
                 <input
                   key={i}
@@ -209,7 +209,7 @@ function MagicKeyContent() {
                   value={d}
                   onChange={e => handleDigit(e.target.value, i)}
                   onKeyDown={e => handleKeyDown(e, i)}
-                  className="digit-box w-16 h-16 text-center text-2xl font-bold text-white rounded-xl border-2 border-purple-700/50 focus:outline-none focus:border-purple-400 transition-colors"
+                  className="digit-box w-14 h-14 sm:w-16 sm:h-16 text-center text-2xl font-bold text-white rounded-xl border-2 border-purple-700/50 focus:outline-none focus:border-purple-400 transition-colors"
                   style={{ background: COLOR.magicAccentBg }}
                 />
               ))}

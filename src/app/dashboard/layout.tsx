@@ -13,7 +13,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <Sidebar role={(session.user as any).role} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <TopBar user={session.user as any} />
-        <main className="flex-1 overflow-y-auto p-6" style={{ backgroundColor: 'var(--bg-base)' }}>
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6" style={{ backgroundColor: 'var(--bg-base)' }}>
           {children}
           <footer className="mt-8 pt-4 border-t text-center" style={{ borderColor: 'var(--border-base)' }}>
             <span className="glow-credit">Designed and Developed by Hamdan Kaiser</span>
