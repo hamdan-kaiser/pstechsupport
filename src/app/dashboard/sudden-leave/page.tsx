@@ -1,5 +1,6 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { SuddenLeaveClient } from '@/components/suddenleave/SuddenLeaveClient'
 import { getDayKey, getShiftEndTime } from '@/lib/utils'
@@ -9,9 +10,10 @@ export default async function SuddenLeavePage() {
   const session = await getServerSession(authOptions)
   const userId = (session!.user as any).id
   const role = (session!.user as any).role
+  if (role === 'viewer') redirect('/dashboard')
 
   const requests = await prisma.earlyLeaveRequest.findMany({
-    where: role === 'admin' || role === 'viewer' ? {} : { userId },
+    where: role === 'admin' ? {} : { userId },
     include: { user: { select: { name: true } } },
     orderBy: { createdAt: 'desc' },
   })

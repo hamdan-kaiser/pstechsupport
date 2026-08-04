@@ -36,10 +36,17 @@ const adminLinks = [
   { href: '/dashboard/iq-test', label: 'Getting bored?', icon: Brain },
 ]
 
+// Viewers are read-only observers — no leave requests, stats, or shift swaps, just the schedule
+const viewerLinks = [
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/dashboard/timetable', label: 'Timetable', icon: Clock },
+  { href: '/dashboard/iq-test', label: 'Getting bored?', icon: Brain },
+]
+
 export function Sidebar({ role }: { role: string }) {
   const pathname = usePathname()
   const sidebarRef = useRef<HTMLDivElement>(null)
-  const links = role === 'admin' ? adminLinks : employeeLinks
+  const links = role === 'admin' ? adminLinks : role === 'viewer' ? viewerLinks : employeeLinks
   const { mobileSidebarOpen, closeMobileSidebar } = useAppStore()
 
   useEffect(() => {

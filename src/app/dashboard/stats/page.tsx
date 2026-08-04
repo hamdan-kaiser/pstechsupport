@@ -1,5 +1,6 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { StatsClient } from '@/components/stats/StatsClient'
 import { getMonthlyLeaveSummaryForUsers } from '@/lib/monthlyLeave'
@@ -8,6 +9,7 @@ export default async function StatsPage() {
   const session = await getServerSession(authOptions)
   const userId = (session!.user as any).id
   const role = (session!.user as any).role
+  if (role === 'viewer') redirect('/dashboard')
   const now = new Date()
   const month = now.getMonth() + 1
   const year = now.getFullYear()

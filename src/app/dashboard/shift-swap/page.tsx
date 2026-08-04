@@ -1,5 +1,6 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { ShiftSwapClient } from '@/components/shifts/ShiftSwapClient'
 
@@ -7,6 +8,7 @@ export default async function ShiftSwapPage() {
   const session = await getServerSession(authOptions)
   const userId = (session!.user as any).id
   const role = (session!.user as any).role
+  if (role === 'viewer') redirect('/dashboard')
 
   const [swaps, employees] = await Promise.all([
     prisma.shiftSwap.findMany({

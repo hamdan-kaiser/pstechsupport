@@ -11,8 +11,9 @@ export async function GET() {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const userId = (session.user as any).id
   const role = (session.user as any).role
+  if (role === 'viewer') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  const where = role === 'admin' || role === 'viewer' ? {} : { userId }
+  const where = role === 'admin' ? {} : { userId }
   const requests = await prisma.sickRequest.findMany({
     where,
     include: { user: { select: { name: true, email: true } } },

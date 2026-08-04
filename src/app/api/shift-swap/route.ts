@@ -9,8 +9,9 @@ export async function GET() {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const userId = (session.user as any).id
   const role = (session.user as any).role
+  if (role === 'viewer') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  const where = role === 'admin' || role === 'viewer' ? {} : { OR: [{ requesterId: userId }, { targetId: userId }] }
+  const where = role === 'admin' ? {} : { OR: [{ requesterId: userId }, { targetId: userId }] }
   const swaps = await prisma.shiftSwap.findMany({
     where,
     include: {

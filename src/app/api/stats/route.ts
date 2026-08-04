@@ -7,12 +7,13 @@ import { getMonthlyLeaveSummaryForUsers } from '@/lib/monthlyLeave'
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const role = (session.user as any).role
+  if (role === 'viewer') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   const { searchParams } = new URL(req.url)
   const month = parseInt(searchParams.get('month') ?? String(new Date().getMonth() + 1))
   const year = parseInt(searchParams.get('year') ?? String(new Date().getFullYear()))
-  const role = (session.user as any).role
 
-  if (role === 'admin' || role === 'viewer') {
+  if (role === 'admin') {
     const stats = await prisma.statsRecord.findMany({
       where: { month, year },
       include: { user: { select: { name: true, shift: true } } },

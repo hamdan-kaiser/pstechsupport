@@ -52,6 +52,89 @@ export function DashboardClient({ user, allTimetables, pendingHolidays, pendingS
     return () => ctx.revert()
   }, [usedPct])
 
+  const timetableCard = (
+    <div ref={tableRef} className="card">
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="text-lg font-semibold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+          <Clock className="w-5 h-5" style={{ color: 'var(--brand-text)' }} />
+          Team Timetable – This Week
+        </h2>
+        <Link href="/dashboard/timetable" className="text-sm transition-colors" style={{ color: 'var(--brand-text)' }}>View full →</Link>
+      </div>
+
+      {allTimetables.length === 0 ? (
+        <div className="text-center py-12" style={{ color: 'var(--text-muted)' }}>
+          <Clock className="w-10 h-10 mx-auto mb-3 opacity-30" />
+          <p>No timetable for this week yet.</p>
+          {role === 'admin' && (
+            <Link href="/dashboard/timetable" className="text-sm mt-2 inline-block hover:underline" style={{ color: 'var(--brand-text)' }}>Upload timetable →</Link>
+          )}
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b" style={{ borderColor: 'var(--border-base)' }}>
+                <th className="text-left py-3 px-3 font-medium w-40" style={{ color: 'var(--text-secondary)' }}>Employee</th>
+                {DAY_LABELS.map((d, i) => (
+                  <th key={d} className="text-center py-3 px-2 font-medium" style={{ color: i === todayColIndex ? 'var(--brand-text)' : 'var(--text-secondary)', backgroundColor: i === todayColIndex ? TODAY_TINT : undefined }}>{d}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {allTimetables.map((entry, i) => {
+                const isMe = entry.userId === currentUserId
+                const rowTodayValue = todayColIndex >= 0 ? entry[DAYS[todayColIndex]] : null
+                const rowPeriod = deriveRowStatus(rowTodayValue)
+                return (
+                <tr key={entry.id ?? i} className={cn('timetable-row border-b transition-colors', isMe && 'my-row')} style={{ borderColor: 'var(--border-base)' }}
+                  onMouseEnter={e => { if (!isMe) e.currentTarget.style.backgroundColor = 'var(--bg-elevated)' }}
+                  onMouseLeave={e => { if (!isMe) e.currentTarget.style.backgroundColor = '' }}>
+                  <td className="py-3 px-3">
+                    <div className="flex items-center gap-2">
+                      <div className={cn('w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0', avatarColor(entry.user?.name ?? ''))}>
+                        {entry.user?.name?.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="font-medium text-xs flex items-center gap-1.5" style={{ color: 'var(--text-primary)' }}>
+                          {entry.user?.name}
+                          {isMe && <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: 'var(--brand)', color: 'white' }}>You</span>}
+                        </p>
+                        <span className={cn('text-xs px-1.5 py-0.5 rounded-full capitalize', shiftBadge(rowPeriod))}>
+                          {rowPeriod}
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                  {DAYS.map((day, di) => (
+                    <td key={day} className="py-3 px-2 text-center" style={{ backgroundColor: di === todayColIndex ? TODAY_TINT : undefined }}>
+                      {entry[day] ? (
+                        <span className={cn('text-xs px-2 py-1 rounded-lg font-medium', shiftStyle(entry[day]))}>
+                          {entry[day]}
+                        </span>
+                      ) : (
+                        <span style={{ color: 'var(--text-faint)' }}>—</span>
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              )})}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
+
+  // Viewers are read-only observers of the schedule — no personal leave balance, pending
+  // requests, or shift-swap/stats previews to show, since they can't access those sections.
+  if (role === 'viewer') {
+    return (
+      <div className="space-y-6 animate-fade-in">
+        {timetableCard}
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -100,78 +183,7 @@ export function DashboardClient({ user, allTimetables, pendingHolidays, pendingS
         })}
       </div>
 
-      {/* Timetable */}
-      <div ref={tableRef} className="card">
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-semibold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-            <Clock className="w-5 h-5" style={{ color: 'var(--brand-text)' }} />
-            Team Timetable – This Week
-          </h2>
-          <Link href="/dashboard/timetable" className="text-sm transition-colors" style={{ color: 'var(--brand-text)' }}>View full →</Link>
-        </div>
-
-        {allTimetables.length === 0 ? (
-          <div className="text-center py-12" style={{ color: 'var(--text-muted)' }}>
-            <Clock className="w-10 h-10 mx-auto mb-3 opacity-30" />
-            <p>No timetable for this week yet.</p>
-            {role === 'admin' && (
-              <Link href="/dashboard/timetable" className="text-sm mt-2 inline-block hover:underline" style={{ color: 'var(--brand-text)' }}>Upload timetable →</Link>
-            )}
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b" style={{ borderColor: 'var(--border-base)' }}>
-                  <th className="text-left py-3 px-3 font-medium w-40" style={{ color: 'var(--text-secondary)' }}>Employee</th>
-                  {DAY_LABELS.map((d, i) => (
-                    <th key={d} className="text-center py-3 px-2 font-medium" style={{ color: i === todayColIndex ? 'var(--brand-text)' : 'var(--text-secondary)', backgroundColor: i === todayColIndex ? TODAY_TINT : undefined }}>{d}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {allTimetables.map((entry, i) => {
-                  const isMe = entry.userId === currentUserId
-                  const rowTodayValue = todayColIndex >= 0 ? entry[DAYS[todayColIndex]] : null
-                  const rowPeriod = deriveRowStatus(rowTodayValue)
-                  return (
-                  <tr key={entry.id ?? i} className={cn('timetable-row border-b transition-colors', isMe && 'my-row')} style={{ borderColor: 'var(--border-base)' }}
-                    onMouseEnter={e => { if (!isMe) e.currentTarget.style.backgroundColor = 'var(--bg-elevated)' }}
-                    onMouseLeave={e => { if (!isMe) e.currentTarget.style.backgroundColor = '' }}>
-                    <td className="py-3 px-3">
-                      <div className="flex items-center gap-2">
-                        <div className={cn('w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0', avatarColor(entry.user?.name ?? ''))}>
-                          {entry.user?.name?.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="font-medium text-xs flex items-center gap-1.5" style={{ color: 'var(--text-primary)' }}>
-                            {entry.user?.name}
-                            {isMe && <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: 'var(--brand)', color: 'white' }}>You</span>}
-                          </p>
-                          <span className={cn('text-xs px-1.5 py-0.5 rounded-full capitalize', shiftBadge(rowPeriod))}>
-                            {rowPeriod}
-                          </span>
-                        </div>
-                      </div>
-                    </td>
-                    {DAYS.map((day, di) => (
-                      <td key={day} className="py-3 px-2 text-center" style={{ backgroundColor: di === todayColIndex ? TODAY_TINT : undefined }}>
-                        {entry[day] ? (
-                          <span className={cn('text-xs px-2 py-1 rounded-lg font-medium', shiftStyle(entry[day]))}>
-                            {entry[day]}
-                          </span>
-                        ) : (
-                          <span style={{ color: 'var(--text-faint)' }}>—</span>
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                )})}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      {timetableCard}
 
       {/* Bottom row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
