@@ -3,10 +3,8 @@ import { useState, useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import toast from 'react-hot-toast'
 import { CalendarPlus, Plus, X, Check, Trash2, AlertCircle } from 'lucide-react'
-import { formatDate, getWeekStart, getDayKey } from '@/lib/utils'
+import { formatDate, getWeekStart, getDayKey, SHIFT_CHOICES } from '@/lib/utils'
 import { cn } from '@/lib/utils'
-
-const SHIFT_CHOICES = ['8am (08:00-16:00)', '9am (09:00-17:00)', '10am (10:00-18:00)', '5pm (17:00-01:00)']
 
 interface Props { requests: any[]; role: string; currentUserId: string }
 

@@ -30,6 +30,9 @@ export function diffDays(start: Date, end: Date) {
 export const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const
 export const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
+/** The 4 standard shift options a day can be assigned, matching the Excel timetable format */
+export const SHIFT_CHOICES = ['8am (08:00-16:00)', '9am (09:00-17:00)', '10am (10:00-18:00)', '5pm (17:00-01:00)']
+
 /** Maps JS Date.getUTCDay() (0=Sunday) to the timetable's day-of-week field name.
  *  Uses UTC to match getWeekStart's timezone-independent computation. */
 export const JS_DAY_KEYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const

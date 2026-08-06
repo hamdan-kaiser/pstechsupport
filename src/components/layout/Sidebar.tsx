@@ -3,46 +3,69 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import { gsap } from 'gsap'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   LayoutDashboard, CalendarDays, BarChart3, Clock, ArrowLeftRight,
-  Users, LogOut, Shield, Thermometer, Brain, CalendarPlus, DoorOpen, Timer, X,
+  Users, LogOut, Shield, Thermometer, Brain, CalendarPlus, DoorOpen, Timer, Repeat,
+  Joystick, ChevronDown, X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAppStore } from '@/store/appStore'
 
-const employeeLinks = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/dashboard/holidays', label: 'Holidays', icon: CalendarDays },
-  { href: '/dashboard/sick-calls', label: 'Sick Calls', icon: Thermometer },
-  { href: '/dashboard/additional-shift', label: 'Additional Shift', icon: CalendarPlus },
-  { href: '/dashboard/sudden-leave', label: 'Sudden Leave', icon: DoorOpen },
-  { href: '/dashboard/late-arrival', label: 'Late Arrival', icon: Timer },
-  { href: '/dashboard/stats', label: 'My Stats', icon: BarChart3 },
-  { href: '/dashboard/timetable', label: 'Timetable', icon: Clock },
-  { href: '/dashboard/shift-swap', label: 'Shift Swap', icon: ArrowLeftRight },
-  { href: '/dashboard/iq-test', label: 'Getting bored?', icon: Brain },
+// Each item is either a standalone link, or a collapsible section grouping a
+// few related links under one common-scenario heading — keeps the top-level
+// nav short instead of a long flat list.
+type NavLink = { type: 'link'; href: string; label: string; icon: any; badgeIcon?: any }
+type NavSection = { type: 'section'; label: string; icon: any; children: { href: string; label: string; icon: any }[] }
+type NavItem = NavLink | NavSection
+
+const leaveAttendanceSection: NavSection = {
+  type: 'section', label: 'Leave & Attendance', icon: CalendarDays,
+  children: [
+    { href: '/dashboard/holidays', label: 'Holidays', icon: CalendarDays },
+    { href: '/dashboard/sick-calls', label: 'Sick Calls', icon: Thermometer },
+    { href: '/dashboard/sudden-leave', label: 'Sudden Leave', icon: DoorOpen },
+    { href: '/dashboard/late-arrival', label: 'Late Arrival', icon: Timer },
+  ],
+}
+
+const employeeLinks: NavItem[] = [
+  { type: 'link', href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  leaveAttendanceSection,
+  {
+    type: 'section', label: 'Changes in Shift', icon: ArrowLeftRight,
+    children: [
+      { href: '/dashboard/additional-shift', label: 'Additional Shift', icon: CalendarPlus },
+      { href: '/dashboard/shift-swap', label: 'Shift Swap', icon: ArrowLeftRight },
+    ],
+  },
+  { type: 'link', href: '/dashboard/stats', label: 'My Stats', icon: BarChart3 },
+  { type: 'link', href: '/dashboard/timetable', label: 'Timetable', icon: Clock },
+  { type: 'link', href: '/dashboard/iq-test', label: 'Getting bored?', icon: Brain, badgeIcon: Joystick },
 ]
 
-const adminLinks = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/dashboard/holidays', label: 'Holidays', icon: CalendarDays },
-  { href: '/dashboard/sick-calls', label: 'Sick Calls', icon: Thermometer },
-  { href: '/dashboard/additional-shift', label: 'Additional Shift', icon: CalendarPlus },
-  { href: '/dashboard/sudden-leave', label: 'Sudden Leave', icon: DoorOpen },
-  { href: '/dashboard/late-arrival', label: 'Late Arrival', icon: Timer },
-  { href: '/dashboard/stats', label: 'Stats & Leaderboard', icon: BarChart3 },
-  { href: '/dashboard/timetable', label: 'Timetable', icon: Clock },
-  { href: '/dashboard/shift-swap', label: 'Shift Swap', icon: ArrowLeftRight },
-  { href: '/dashboard/admin/employees', label: 'Employees', icon: Users },
-  { href: '/dashboard/iq-test', label: 'Getting bored?', icon: Brain },
+const adminLinks: NavItem[] = [
+  { type: 'link', href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  leaveAttendanceSection,
+  {
+    type: 'section', label: 'Changes in Shift', icon: ArrowLeftRight,
+    children: [
+      { href: '/dashboard/additional-shift', label: 'Additional Shift', icon: CalendarPlus },
+      { href: '/dashboard/shift-swap', label: 'Shift Swap', icon: ArrowLeftRight },
+      { href: '/dashboard/shift-change', label: 'Change Shift', icon: Repeat },
+    ],
+  },
+  { type: 'link', href: '/dashboard/stats', label: 'Stats & Leaderboard', icon: BarChart3 },
+  { type: 'link', href: '/dashboard/timetable', label: 'Timetable', icon: Clock },
+  { type: 'link', href: '/dashboard/admin/employees', label: 'Employees', icon: Users },
+  { type: 'link', href: '/dashboard/iq-test', label: 'Getting bored?', icon: Brain, badgeIcon: Joystick },
 ]
 
 // Viewers are read-only observers — no leave requests, stats, or shift swaps, just the schedule
-const viewerLinks = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/dashboard/timetable', label: 'Timetable', icon: Clock },
-  { href: '/dashboard/iq-test', label: 'Getting bored?', icon: Brain },
+const viewerLinks: NavItem[] = [
+  { type: 'link', href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { type: 'link', href: '/dashboard/timetable', label: 'Timetable', icon: Clock },
+  { type: 'link', href: '/dashboard/iq-test', label: 'Getting bored?', icon: Brain, badgeIcon: Joystick },
 ]
 
 export function Sidebar({ role }: { role: string }) {
@@ -50,6 +73,25 @@ export function Sidebar({ role }: { role: string }) {
   const sidebarRef = useRef<HTMLDivElement>(null)
   const links = role === 'admin' ? adminLinks : role === 'viewer' ? viewerLinks : employeeLinks
   const { mobileSidebarOpen, closeMobileSidebar } = useAppStore()
+
+  const [expanded, setExpanded] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {}
+    for (const item of links) {
+      if (item.type === 'section') initial[item.label] = item.children.some(c => pathname === c.href)
+    }
+    return initial
+  })
+
+  // If navigation lands on a page inside a collapsed section (e.g. a direct link from a
+  // notification), auto-expand that section without collapsing any others the user opened.
+  useEffect(() => {
+    for (const item of links) {
+      if (item.type === 'section' && item.children.some(c => pathname === c.href)) {
+        setExpanded(prev => prev[item.label] ? prev : { ...prev, [item.label]: true })
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname])
 
   useEffect(() => {
     // Only run the entrance slide on desktop, where the sidebar is always visible. On mobile its
@@ -80,6 +122,9 @@ export function Sidebar({ role }: { role: string }) {
   function handleLinkLeave(e: React.MouseEvent<HTMLElement>) {
     const icon = e.currentTarget.querySelector('svg')
     if (icon) gsap.to(icon, { scale: 1, x: 0, duration: 0.25, ease: 'power2.out' })
+  }
+  function toggleSection(label: string) {
+    setExpanded(prev => ({ ...prev, [label]: !prev[label] }))
   }
 
   return (
@@ -114,13 +159,54 @@ export function Sidebar({ role }: { role: string }) {
         </div>
 
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {links.map(({ href, label, icon: Icon }) => (
-            <Link key={href} href={href} className={cn('sidebar-link', pathname === href && 'active')}
-              onMouseEnter={handleLinkEnter} onMouseLeave={handleLinkLeave}>
-              <Icon className="w-4 h-4 shrink-0" />
-              {label}
-            </Link>
-          ))}
+          {links.map(item => {
+            if (item.type === 'link') {
+              const Icon = item.icon
+              const Badge = item.badgeIcon
+              return (
+                <Link key={item.href} href={item.href} className={cn('sidebar-link', pathname === item.href && 'active')}
+                  onMouseEnter={handleLinkEnter} onMouseLeave={handleLinkLeave}>
+                  <Icon className="w-4 h-4 shrink-0" />
+                  {item.label}
+                  {Badge && <Badge className="w-3.5 h-3.5 ml-auto opacity-60" />}
+                </Link>
+              )
+            }
+
+            const Icon = item.icon
+            const isOpen = !!expanded[item.label]
+            const hasActiveChild = item.children.some(c => pathname === c.href)
+            return (
+              <div key={item.label}>
+                <button
+                  type="button"
+                  onClick={() => toggleSection(item.label)}
+                  onMouseEnter={handleLinkEnter} onMouseLeave={handleLinkLeave}
+                  className={cn('sidebar-link w-full justify-between', hasActiveChild && !isOpen && 'active')}
+                >
+                  <span className="flex items-center gap-3">
+                    <Icon className="w-4 h-4 shrink-0" />
+                    {item.label}
+                  </span>
+                  <ChevronDown className={cn('w-4 h-4 shrink-0 transition-transform duration-200', isOpen && 'rotate-180')} />
+                </button>
+                {isOpen && (
+                  <div className="ml-4 mt-1 space-y-1 border-l pl-3" style={{ borderColor: 'var(--border-base)' }}>
+                    {item.children.map(c => {
+                      const CIcon = c.icon
+                      return (
+                        <Link key={c.href} href={c.href} className={cn('sidebar-link', pathname === c.href && 'active')}
+                          onMouseEnter={handleLinkEnter} onMouseLeave={handleLinkLeave}>
+                          <CIcon className="w-4 h-4 shrink-0" />
+                          {c.label}
+                        </Link>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )
+          })}
         </nav>
 
         <div className="p-4 border-t" style={{ borderColor: 'var(--border-base)' }}>

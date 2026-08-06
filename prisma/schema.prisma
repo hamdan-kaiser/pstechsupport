@@ -25,6 +25,7 @@ model User {
   additionalShiftRequests AdditionalShiftRequest[]
   earlyLeaveRequests     EarlyLeaveRequest[]
   lateArrivalRequests    LateArrivalRequest[]
+  shiftChangeRequests    ShiftChangeRequest[]
   statsRecords           StatsRecord[]
   timetableEntries       TimetableEntry[]
   swapRequestsFrom       ShiftSwap[]      @relation("SwapFrom")
@@ -110,6 +111,17 @@ model LateArrivalRequest {
   previousValues Json? // snapshot of the day's timetable value before approval, for reversal
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+}
+
+model ShiftChangeRequest {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date           DateTime
+  newShift       String // the shift value the admin assigned instead, e.g. "5pm (17:00-01:00)"
+  reason         String
+  previousValues Json? // snapshot of the day's timetable value before the change, for reversal
+  createdAt      DateTime @default(now())
 }
 
 model StatsRecord {
