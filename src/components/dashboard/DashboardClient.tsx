@@ -13,13 +13,13 @@ interface Props {
   allTimetables: any[]
   pendingHolidays: any[]
   pendingSickCalls: any[]
-  pendingOtherCount: number
+  pendingRequestsTotal: number
   recentSwaps: any[]
   role: string
   currentUserId: string
 }
 
-export function DashboardClient({ user, allTimetables, pendingHolidays, pendingSickCalls, pendingOtherCount, recentSwaps, role, currentUserId }: Props) {
+export function DashboardClient({ user, allTimetables, pendingHolidays, pendingSickCalls, pendingRequestsTotal, recentSwaps, role, currentUserId }: Props) {
   const statsRef = useRef<HTMLDivElement>(null)
   const tableRef = useRef<HTMLDivElement>(null)
 
@@ -144,7 +144,7 @@ export function DashboardClient({ user, allTimetables, pendingHolidays, pendingS
           { label: 'Total Holidays', value: user?.totalHolidays ?? 28, sub: 'days per year', icon: CalendarDays, accent: 'text-blue-800 bg-blue-100 dark:text-blue-400 dark:bg-blue-500/15' },
           null, // remaining — special
           { label: 'Current Shift', value: currentShift.label, sub: currentShift.sub, icon: currentShift.icon, accent: currentShift.accent },
-          { label: 'Pending Requests', value: pendingHolidays.length + pendingSickCalls.length + pendingOtherCount, sub: 'holiday, sick & other requests', icon: Clock, accent: 'text-amber-800 bg-amber-100 dark:text-amber-400 dark:bg-amber-500/15' },
+          { label: 'Pending Requests', value: pendingRequestsTotal, sub: role === 'admin' ? 'awaiting your approval, team-wide' : 'holiday, sick & other requests', icon: Clock, accent: 'text-amber-800 bg-amber-100 dark:text-amber-400 dark:bg-amber-500/15' },
         ].map((s, i) => {
           if (i === 1) return (
             <div key="remaining" className="stat-card card">
@@ -190,7 +190,7 @@ export function DashboardClient({ user, allTimetables, pendingHolidays, pendingS
         <div className="card">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-              <CalendarDays className="w-4 h-4" style={{ color: 'var(--brand-text)' }} /> Holiday Requests
+              <CalendarDays className="w-4 h-4" style={{ color: 'var(--brand-text)' }} /> {role === 'admin' ? 'Pending Holiday Requests' : 'My Holiday Requests'}
             </h3>
             <Link href="/dashboard/holidays" className="text-xs transition-colors" style={{ color: 'var(--brand-text)' }}>View all →</Link>
           </div>
@@ -201,6 +201,7 @@ export function DashboardClient({ user, allTimetables, pendingHolidays, pendingS
               {pendingHolidays.map(h => (
                 <div key={h.id} className="flex items-center justify-between p-3 rounded-xl" style={{ backgroundColor: 'var(--bg-elevated)' }}>
                   <div>
+                    {role === 'admin' && <p className="text-xs font-medium mb-0.5" style={{ color: 'var(--brand-text)' }}>{h.user?.name}</p>}
                     <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{formatDate(h.startDate)} – {formatDate(h.endDate)}</p>
                     <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{h.days} day{h.days > 1 ? 's' : ''} · {h.reason}</p>
                   </div>
@@ -214,7 +215,7 @@ export function DashboardClient({ user, allTimetables, pendingHolidays, pendingS
         <div className="card">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-              <Thermometer className="w-4 h-4" style={{ color: 'var(--brand-text)' }} /> Sick Calls
+              <Thermometer className="w-4 h-4" style={{ color: 'var(--brand-text)' }} /> {role === 'admin' ? 'Pending Sick Calls' : 'My Sick Calls'}
             </h3>
             <Link href="/dashboard/sick-calls" className="text-xs transition-colors" style={{ color: 'var(--brand-text)' }}>View all →</Link>
           </div>
@@ -225,6 +226,7 @@ export function DashboardClient({ user, allTimetables, pendingHolidays, pendingS
               {pendingSickCalls.map(s => (
                 <div key={s.id} className="flex items-center justify-between p-3 rounded-xl" style={{ backgroundColor: 'var(--bg-elevated)' }}>
                   <div>
+                    {role === 'admin' && <p className="text-xs font-medium mb-0.5" style={{ color: 'var(--brand-text)' }}>{s.user?.name}</p>}
                     <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{formatDate(s.startDate)} – {formatDate(s.endDate)}</p>
                     <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{s.days} day{s.days > 1 ? 's' : ''} · {s.reason}</p>
                   </div>
@@ -238,7 +240,7 @@ export function DashboardClient({ user, allTimetables, pendingHolidays, pendingS
         <div className="card">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-              <ArrowLeftRight className="w-4 h-4" style={{ color: 'var(--brand-text)' }} /> Shift Swaps
+              <ArrowLeftRight className="w-4 h-4" style={{ color: 'var(--brand-text)' }} /> {role === 'admin' ? 'Recent Shift Swaps' : 'Shift Swaps'}
             </h3>
             <Link href="/dashboard/shift-swap" className="text-xs transition-colors" style={{ color: 'var(--brand-text)' }}>View all →</Link>
           </div>

@@ -1,7 +1,7 @@
 import { prisma } from './prisma'
 
 /** refType marks a notification as actionable directly from the notification panel:
- *  'holiday' | 'sick'            -> admin approves/rejects via that request's id
+ *  'holiday' | 'sick' | 'additional-shift' | 'early-leave' | 'late-arrival' -> admin approves/rejects via that request's id
  *  'shiftswap-accept'            -> target employee accepts/declines the swap
  *  'shiftswap-approve'           -> admin approves/rejects the swap
  */

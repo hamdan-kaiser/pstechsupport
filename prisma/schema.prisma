@@ -24,6 +24,7 @@ model User {
   sickRequests           SickRequest[]
   additionalShiftRequests AdditionalShiftRequest[]
   earlyLeaveRequests     EarlyLeaveRequest[]
+  lateArrivalRequests    LateArrivalRequest[]
   statsRecords           StatsRecord[]
   timetableEntries       TimetableEntry[]
   swapRequestsFrom       ShiftSwap[]      @relation("SwapFrom")
@@ -95,6 +96,20 @@ model EarlyLeaveRequest {
   status    String   @default("pending")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model LateArrivalRequest {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date           DateTime
+  joiningTime    String // e.g. "12:00" — the time they'll actually join
+  shiftStart     String // the shift's normal start time that day, e.g. "09:00", for reference/validation
+  reason         String
+  status         String   @default("pending")
+  previousValues Json? // snapshot of the day's timetable value before approval, for reversal
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model StatsRecord {

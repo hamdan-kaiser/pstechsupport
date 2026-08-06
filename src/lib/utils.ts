@@ -61,6 +61,29 @@ export function getShiftEndTime(rawShiftValue: string | null | undefined): strin
   return SHIFT_END_TIMES[label] ?? null
 }
 
+/** Scheduled start time ("HH:MM", 24h) for each standard shift label, used to validate late-arrival times */
+export const SHIFT_START_TIMES: Record<string, string> = {
+  '8am': '08:00',
+  '9am': '09:00',
+  '10am': '10:00',
+  '5pm': '17:00',
+  '6pm': '18:00',
+}
+export function getShiftStartTime(rawShiftValue: string | null | undefined): string | null {
+  if (!rawShiftValue) return null
+  const label = splitShiftValue(rawShiftValue).label.trim().toLowerCase()
+  return SHIFT_START_TIMES[label] ?? null
+}
+
+/** Combines a day's original shift label with a reported late-joining time, e.g. "9am (09:00-17:00)"
+ *  + "12:00" -> "9am (Late: 12:00)" — keeps the original label as a substring so shiftStyle/
+ *  deriveShiftPeriod still classify the cell the same way as before the late arrival. */
+export function buildLateArrivalValue(originalValue: string | null | undefined, joiningTime: string): string {
+  if (!originalValue || originalValue.toLowerCase() === 'off') return `Late Arrival (${joiningTime})`
+  const { label } = splitShiftValue(originalValue)
+  return `${label} (Late: ${joiningTime})`
+}
+
 // ─── Shared style helpers ───────────────────────────────────────────────────
 
 /** Tailwind classes for a shift/timetable cell value */

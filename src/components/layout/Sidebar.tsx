@@ -6,7 +6,7 @@ import { gsap } from 'gsap'
 import { useEffect, useRef } from 'react'
 import {
   LayoutDashboard, CalendarDays, BarChart3, Clock, ArrowLeftRight,
-  Users, LogOut, Shield, Thermometer, Brain, CalendarPlus, DoorOpen, X,
+  Users, LogOut, Shield, Thermometer, Brain, CalendarPlus, DoorOpen, Timer, X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAppStore } from '@/store/appStore'
@@ -17,6 +17,7 @@ const employeeLinks = [
   { href: '/dashboard/sick-calls', label: 'Sick Calls', icon: Thermometer },
   { href: '/dashboard/additional-shift', label: 'Additional Shift', icon: CalendarPlus },
   { href: '/dashboard/sudden-leave', label: 'Sudden Leave', icon: DoorOpen },
+  { href: '/dashboard/late-arrival', label: 'Late Arrival', icon: Timer },
   { href: '/dashboard/stats', label: 'My Stats', icon: BarChart3 },
   { href: '/dashboard/timetable', label: 'Timetable', icon: Clock },
   { href: '/dashboard/shift-swap', label: 'Shift Swap', icon: ArrowLeftRight },
@@ -29,6 +30,7 @@ const adminLinks = [
   { href: '/dashboard/sick-calls', label: 'Sick Calls', icon: Thermometer },
   { href: '/dashboard/additional-shift', label: 'Additional Shift', icon: CalendarPlus },
   { href: '/dashboard/sudden-leave', label: 'Sudden Leave', icon: DoorOpen },
+  { href: '/dashboard/late-arrival', label: 'Late Arrival', icon: Timer },
   { href: '/dashboard/stats', label: 'Stats & Leaderboard', icon: BarChart3 },
   { href: '/dashboard/timetable', label: 'Timetable', icon: Clock },
   { href: '/dashboard/shift-swap', label: 'Shift Swap', icon: ArrowLeftRight },

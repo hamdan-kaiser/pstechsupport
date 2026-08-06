@@ -8,16 +8,31 @@ import { getEffectiveTimetableForWeek } from '@/lib/timetableResolve'
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
   const userId = (session!.user as any).id
+  const role = (session!.user as any).role
 
-  const [user, timetable, pendingHolidays, pendingSickCalls, pendingAdditionalShifts, pendingEarlyLeaves, recentSwaps] = await Promise.all([
+  // Admins don't submit their own leave requests, so scoping these to the viewer's own userId
+  // (as if they were an employee) always came back empty for admin — the panels looked "broken"
+  // when really they were just showing an admin's non-existent personal requests. Admins need to
+  // see requests awaiting THEIR action across the whole team; employees still only see their own.
+  const isAdmin = role === 'admin'
+  const pendingWhere = isAdmin ? { status: 'pending' } : { userId, status: 'pending' }
+  const swapWhere = isAdmin ? {} : { OR: [{ requesterId: userId }, { targetId: userId }] }
+
+  const [
+    user, timetable, pendingHolidays, pendingSickCalls, pendingHolidaysCount, pendingSickCount,
+    pendingAdditionalShifts, pendingEarlyLeaves, pendingLateArrivals, recentSwaps,
+  ] = await Promise.all([
     prisma.user.findUnique({ where: { id: userId }, select: { id: true, name: true, shift: true, totalHolidays: true, usedHolidays: true } }),
     prisma.timetableEntry.findFirst({ where: { userId }, orderBy: { weekStart: 'desc' } }),
-    prisma.holidayRequest.findMany({ where: { userId, status: 'pending' }, orderBy: { createdAt: 'desc' }, take: 3 }),
-    prisma.sickRequest.findMany({ where: { userId, status: 'pending' }, orderBy: { createdAt: 'desc' }, take: 3 }),
-    prisma.additionalShiftRequest.count({ where: { userId, status: 'pending' } }),
-    prisma.earlyLeaveRequest.count({ where: { userId, status: 'pending' } }),
+    prisma.holidayRequest.findMany({ where: pendingWhere, include: isAdmin ? { user: { select: { name: true } } } : undefined, orderBy: { createdAt: 'desc' }, take: 3 }),
+    prisma.sickRequest.findMany({ where: pendingWhere, include: isAdmin ? { user: { select: { name: true } } } : undefined, orderBy: { createdAt: 'desc' }, take: 3 }),
+    prisma.holidayRequest.count({ where: pendingWhere }),
+    prisma.sickRequest.count({ where: pendingWhere }),
+    prisma.additionalShiftRequest.count({ where: pendingWhere }),
+    prisma.earlyLeaveRequest.count({ where: pendingWhere }),
+    prisma.lateArrivalRequest.count({ where: pendingWhere }),
     prisma.shiftSwap.findMany({
-      where: { OR: [{ requesterId: userId }, { targetId: userId }] },
+      where: swapWhere,
       include: { requester: { select: { name: true } }, target: { select: { name: true } } },
       orderBy: { createdAt: 'desc' },
       take: 3,
@@ -35,9 +50,9 @@ export default async function DashboardPage() {
       allTimetables={allTimetables}
       pendingHolidays={pendingHolidays}
       pendingSickCalls={pendingSickCalls}
-      pendingOtherCount={pendingAdditionalShifts + pendingEarlyLeaves}
+      pendingRequestsTotal={pendingHolidaysCount + pendingSickCount + pendingAdditionalShifts + pendingEarlyLeaves + pendingLateArrivals}
       recentSwaps={recentSwaps}
-      role={(session!.user as any).role}
+      role={role}
       currentUserId={userId}
     />
   )

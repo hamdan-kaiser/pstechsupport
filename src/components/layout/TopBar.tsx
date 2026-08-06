@@ -50,6 +50,11 @@ const REF_ACTIONS: Record<string, {
     endpoint: id => `/api/sudden-leave/${id}`,
     body: decision => ({ status: decision === 'approve' ? 'approved' : 'rejected' }),
   },
+  'late-arrival': {
+    approveLabel: 'Approve', declineLabel: 'Reject',
+    endpoint: id => `/api/late-arrival/${id}`,
+    body: decision => ({ status: decision === 'approve' ? 'approved' : 'rejected' }),
+  },
 }
 
 export function TopBar({ user }: TopBarProps) {
