@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { notifyAllAdmins } from '@/lib/notifications'
+import { notifyAdminsByEmail } from '@/lib/email'
 import { diffDays } from '@/lib/utils'
 import { findLeaveConflict } from '@/lib/leaveConflict'
 
@@ -49,6 +50,11 @@ export async function POST(req: Request) {
     `${user.name} has reported sick for ${days} day(s) from ${new Date(startDate).toLocaleDateString()} to ${new Date(endDate).toLocaleDateString()}.`,
     'warning',
     { refType: 'sick', refId: request.id }
+  )
+  await notifyAdminsByEmail(
+    'New Sick Call',
+    [`${user.name} has reported sick for ${days} day(s) from ${new Date(startDate).toLocaleDateString()} to ${new Date(endDate).toLocaleDateString()}.`, `Reason: ${reason}`],
+    '/dashboard/sick-calls'
   )
 
   return NextResponse.json(request, { status: 201 })

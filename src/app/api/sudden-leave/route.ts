@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { notifyAllAdmins } from '@/lib/notifications'
+import { notifyAdminsByEmail } from '@/lib/email'
 import { getDayKey, getShiftEndTime } from '@/lib/utils'
 import { getEffectiveDayValue } from '@/lib/timetableResolve'
 
@@ -52,6 +53,11 @@ export async function POST(req: Request) {
     `${user.name} needs to leave early today at ${leaveTime} (shift ends ${shiftEnd}). Reason: ${reason}`,
     'warning',
     { refType: 'early-leave', refId: request.id }
+  )
+  await notifyAdminsByEmail(
+    'Sudden Leave Request',
+    [`${user.name} needs to leave early today at ${leaveTime} (shift ends ${shiftEnd}).`, `Reason: ${reason}`],
+    '/dashboard/sudden-leave'
   )
 
   return NextResponse.json(request, { status: 201 })

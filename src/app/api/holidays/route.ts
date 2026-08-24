@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { createNotification, notifyAllAdmins } from '@/lib/notifications'
+import { notifyAdminsByEmail } from '@/lib/email'
 import { diffDays } from '@/lib/utils'
 import { findLeaveConflict } from '@/lib/leaveConflict'
 
@@ -51,6 +52,11 @@ export async function POST(req: Request) {
     `${user.name} has requested ${days} day(s) off from ${new Date(startDate).toLocaleDateString()} to ${new Date(endDate).toLocaleDateString()}.`,
     'info',
     { refType: 'holiday', refId: request.id }
+  )
+  await notifyAdminsByEmail(
+    'New Holiday Request',
+    [`${user.name} has requested ${days} day(s) off from ${new Date(startDate).toLocaleDateString()} to ${new Date(endDate).toLocaleDateString()}.`, `Reason: ${reason}`],
+    '/dashboard/holidays'
   )
 
   return NextResponse.json(request, { status: 201 })

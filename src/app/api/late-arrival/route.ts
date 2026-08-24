@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { createNotification, notifyAllAdmins } from '@/lib/notifications'
+import { notifyAdminsByEmail } from '@/lib/email'
 import { getDayKey, getShiftStartTime, buildLateArrivalValue } from '@/lib/utils'
 import { getEffectiveDayValue } from '@/lib/timetableResolve'
 import { findLeaveConflict } from '@/lib/leaveConflict'
@@ -80,6 +81,11 @@ export async function POST(req: Request) {
     `${user.name} will join late today at ${joiningTime} (usual start ${shiftStart}). Reason: ${reason}`,
     'warning',
     { refType: 'late-arrival', refId: request.id }
+  )
+  await notifyAdminsByEmail(
+    'Late Arrival Request',
+    [`${user.name} will join late today at ${joiningTime} (usual start ${shiftStart}).`, `Reason: ${reason}`],
+    '/dashboard/late-arrival'
   )
 
   return NextResponse.json(request, { status: 201 })
