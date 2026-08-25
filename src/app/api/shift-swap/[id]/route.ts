@@ -56,8 +56,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     ])
 
     await Promise.all([
-      createNotification(swap.requesterId, 'Shift Swap Approved ✅', `Your shift swap with ${swap.target.name} on ${swapDateObj.toLocaleDateString()} has been approved. Timetable updated.`, 'success'),
-      createNotification(swap.targetId, 'Shift Swap Approved ✅', `Your shift swap with ${swap.requester.name} on ${swapDateObj.toLocaleDateString()} has been approved. Timetable updated.`, 'success'),
+      createNotification(swap.requesterId, 'Shift Swap Approved ✅', `Your shift swap with ${swap.target.name} on ${swapDateObj.toLocaleDateString()} has been approved. You'll now cover ${swap.targetShift} that day — check the Timetable.`, 'success'),
+      createNotification(swap.targetId, 'Shift Swap Approved ✅', `Your shift swap with ${swap.requester.name} on ${swapDateObj.toLocaleDateString()} has been approved. You'll now cover ${swap.requesterShift} that day — check the Timetable.`, 'success'),
     ])
     return NextResponse.json({ ok: true })
   }

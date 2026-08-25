@@ -26,3 +26,16 @@ export async function notifyAllEmployees(title: string, message: string, type: '
   const users = await prisma.user.findMany({ select: { id: true } })
   await Promise.all(users.map(u => createNotification(u.id, title, message, type, ref)))
 }
+
+const NOTIFICATION_RETENTION_MS = 30 * 24 * 60 * 60 * 1000 // 30 days
+
+/** Deletes already-read notifications older than 30 days — read notifications have no ongoing
+ *  value once seen, and this is by far the fastest-growing table in the app (every request
+ *  action fans out a row per admin). There's no cron infrastructure here, so this is called
+ *  opportunistically at low probability from the notifications GET route instead: cheap enough
+ *  in aggregate to keep the table from growing unbounded, without adding latency to most requests. */
+export async function pruneOldNotifications() {
+  await prisma.notification.deleteMany({
+    where: { read: true, createdAt: { lt: new Date(Date.now() - NOTIFICATION_RETENTION_MS) } },
+  })
+}

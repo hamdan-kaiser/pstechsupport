@@ -17,11 +17,28 @@ export function EmployeesClient({ employees: initial }: { employees: any[] }) {
   const [form, setForm] = useState<any>(EMPTY_FORM)
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [showLeftFade, setShowLeftFade] = useState(false)
+  const [showRightFade, setShowRightFade] = useState(false)
   const formRef = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     gsap.fromTo('.emp-row', { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.35, stagger: 0.06, ease: 'power2.out' })
   }, [])
+
+  // The table is wider than most phone screens and scrolls horizontally within its own
+  // container — without a visible cue, that's easy to miss.
+  function updateScrollFades() {
+    const el = scrollRef.current
+    if (!el) return
+    setShowLeftFade(el.scrollLeft > 4)
+    setShowRightFade(el.scrollLeft + el.clientWidth < el.scrollWidth - 4)
+  }
+  useEffect(() => {
+    updateScrollFades()
+    window.addEventListener('resize', updateScrollFades)
+    return () => window.removeEventListener('resize', updateScrollFades)
+  }, [employees])
 
   useEffect(() => {
     if ((showForm || editing) && formRef.current) {
@@ -245,7 +262,14 @@ export function EmployeesClient({ employees: initial }: { employees: any[] }) {
         </div>
       )}
 
-      <div className="card overflow-x-auto">
+      <div className="relative">
+        {showLeftFade && (
+          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-10 z-10 rounded-l-2xl" style={{ background: 'linear-gradient(to right, var(--bg-surface), transparent)' }} />
+        )}
+        {showRightFade && (
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-10 z-10 rounded-r-2xl" style={{ background: 'linear-gradient(to left, var(--bg-surface), transparent)' }} />
+        )}
+        <div ref={scrollRef} className="card overflow-x-auto" onScroll={updateScrollFades}>
         <table className="w-full text-sm min-w-[700px]">
           <thead>
             <tr className="border-b" style={{ borderColor: 'var(--border-base)' }}>
@@ -317,6 +341,10 @@ export function EmployeesClient({ employees: initial }: { employees: any[] }) {
             ))}
           </tbody>
         </table>
+        </div>
+        {showRightFade && (
+          <p className="sm:hidden text-center text-xs mt-2" style={{ color: 'var(--text-muted)' }}>← Swipe to see more →</p>
+        )}
       </div>
     </div>
   )

@@ -1,5 +1,6 @@
 'use client'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { gsap } from 'gsap'
 import { CalendarDays, ArrowLeftRight, Sun, Moon, Coffee, Clock, Thermometer } from 'lucide-react'
 import { formatDate, DAY_LABELS, DAYS, shiftStyle, shiftBadge, avatarColor, getTodayDayKey, splitShiftValue, deriveShiftPeriod, deriveRowStatus } from '@/lib/utils'
@@ -22,6 +23,31 @@ interface Props {
 export function DashboardClient({ user, allTimetables, pendingHolidays, pendingSickCalls, pendingRequestsTotal, recentSwaps, role, currentUserId }: Props) {
   const statsRef = useRef<HTMLDivElement>(null)
   const tableRef = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [showRightFade, setShowRightFade] = useState(false)
+  const router = useRouter()
+
+  // The mini-timetable is wider than most phone screens and scrolls horizontally within its own
+  // container — without a visible cue, that's easy to miss.
+  function updateScrollFade() {
+    const el = scrollRef.current
+    if (!el) return
+    setShowRightFade(el.scrollLeft + el.clientWidth < el.scrollWidth - 4)
+  }
+  useEffect(() => {
+    updateScrollFade()
+    window.addEventListener('resize', updateScrollFade)
+    return () => window.removeEventListener('resize', updateScrollFade)
+  }, [allTimetables])
+
+  // This page is server-rendered once — without this, a Dashboard tab left open from before a
+  // swap/leave request got approved elsewhere keeps showing the old timetable/pending counts
+  // until manually reloaded, which reads as "the approval didn't apply."
+  useEffect(() => {
+    function refresh() { router.refresh() }
+    window.addEventListener('focus', refresh)
+    return () => window.removeEventListener('focus', refresh)
+  }, [router])
 
   const remaining = (user?.totalHolidays ?? 28) - (user?.usedHolidays ?? 0)
   const usedPct = Math.round(((user?.usedHolidays ?? 0) / (user?.totalHolidays ?? 28)) * 100)
@@ -71,7 +97,11 @@ export function DashboardClient({ user, allTimetables, pendingHolidays, pendingS
           )}
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="relative">
+        {showRightFade && (
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-10 z-10 rounded-r-2xl" style={{ background: 'linear-gradient(to left, var(--bg-surface), transparent)' }} />
+        )}
+        <div ref={scrollRef} className="overflow-x-auto" onScroll={updateScrollFade}>
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b" style={{ borderColor: 'var(--border-base)' }}>
@@ -121,6 +151,10 @@ export function DashboardClient({ user, allTimetables, pendingHolidays, pendingS
               )})}
             </tbody>
           </table>
+        </div>
+        {showRightFade && (
+          <p className="sm:hidden text-center text-xs mt-2" style={{ color: 'var(--text-muted)' }}>← Swipe to see more days →</p>
+        )}
         </div>
       )}
     </div>

@@ -63,7 +63,7 @@ export async function POST(req: Request) {
   await createNotification(
     targetId,
     'Shift Swap Request 🔄',
-    `${requester?.name} wants to swap shifts with you on ${swapDateObj.toLocaleDateString()}. They will cover: ${requesterShift}. You would cover: ${targetShift}.`,
+    `${requester?.name} wants to swap shifts with you on ${swapDateObj.toLocaleDateString()}. They'd cover your shift (${targetShift}), and you'd cover theirs (${requesterShift}).`,
     'warning',
     { refType: 'shiftswap-accept', refId: swap.id }
   )

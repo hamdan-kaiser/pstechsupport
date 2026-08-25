@@ -6,7 +6,7 @@ import { gsap } from 'gsap'
 import { useEffect, useRef, useState } from 'react'
 import {
   LayoutDashboard, CalendarDays, BarChart3, Clock, ArrowLeftRight,
-  Users, LogOut, Shield, Thermometer, Brain, CalendarPlus, DoorOpen, Timer, Repeat,
+  Users, LogOut, Shield, Thermometer, Brain, CalendarPlus, DoorOpen, Timer, Repeat, Shuffle,
   Joystick, ChevronDown, X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -37,6 +37,7 @@ const employeeLinks: NavItem[] = [
     children: [
       { href: '/dashboard/additional-shift', label: 'Additional Shift', icon: CalendarPlus },
       { href: '/dashboard/shift-swap', label: 'Shift Swap', icon: ArrowLeftRight },
+      { href: '/dashboard/move-shift', label: 'Move Shift', icon: Shuffle },
     ],
   },
   { type: 'link', href: '/dashboard/stats', label: 'My Stats', icon: BarChart3 },
@@ -52,6 +53,7 @@ const adminLinks: NavItem[] = [
     children: [
       { href: '/dashboard/additional-shift', label: 'Additional Shift', icon: CalendarPlus },
       { href: '/dashboard/shift-swap', label: 'Shift Swap', icon: ArrowLeftRight },
+      { href: '/dashboard/move-shift', label: 'Move Shift', icon: Shuffle },
       { href: '/dashboard/shift-change', label: 'Change Shift', icon: Repeat },
     ],
   },

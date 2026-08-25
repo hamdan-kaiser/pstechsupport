@@ -87,6 +87,15 @@ export function buildLateArrivalValue(originalValue: string | null | undefined, 
   return `${label} (Late: ${joiningTime})`
 }
 
+/** Same idea as buildLateArrivalValue, but for an approved sudden/early leave — combines the
+ *  day's original shift label with the time they actually left, e.g. "9am (09:00-17:00)" +
+ *  "15:00" -> "9am (Early Leave: 15:00)". */
+export function buildEarlyLeaveValue(originalValue: string | null | undefined, leaveTime: string): string {
+  if (!originalValue || originalValue.toLowerCase() === 'off') return `Early Leave (${leaveTime})`
+  const { label } = splitShiftValue(originalValue)
+  return `${label} (Early Leave: ${leaveTime})`
+}
+
 // ─── Shared style helpers ───────────────────────────────────────────────────
 
 /** Tailwind classes for a shift/timetable cell value */

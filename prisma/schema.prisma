@@ -26,6 +26,7 @@ model User {
   earlyLeaveRequests     EarlyLeaveRequest[]
   lateArrivalRequests    LateArrivalRequest[]
   shiftChangeRequests    ShiftChangeRequest[]
+  shiftMoveRequests      ShiftMoveRequest[]
   statsRecords           StatsRecord[]
   timetableEntries       TimetableEntry[]
   swapRequestsFrom       ShiftSwap[]      @relation("SwapFrom")
@@ -57,6 +58,8 @@ model HolidayRequest {
   previousValues  Json? // snapshot of each affected day's timetable value before approval, for reversal
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  @@index([status])
 }
 
 model SickRequest {
@@ -71,6 +74,8 @@ model SickRequest {
   previousValues  Json?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  @@index([status])
 }
 
 model AdditionalShiftRequest {
@@ -84,6 +89,8 @@ model AdditionalShiftRequest {
   previousValues  Json?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  @@index([status])
 }
 
 model EarlyLeaveRequest {
@@ -95,8 +102,11 @@ model EarlyLeaveRequest {
   shiftEnd  String // the shift's normal end time that day, e.g. "17:00", for reference/validation
   reason    String
   status    String   @default("pending")
+  previousValues Json? // snapshot of the day's timetable value before approval, for reversal
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([status])
 }
 
 model LateArrivalRequest {
@@ -111,6 +121,8 @@ model LateArrivalRequest {
   previousValues Json? // snapshot of the day's timetable value before approval, for reversal
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+
+  @@index([status])
 }
 
 model ShiftChangeRequest {
@@ -122,6 +134,21 @@ model ShiftChangeRequest {
   reason         String
   previousValues Json? // snapshot of the day's timetable value before the change, for reversal
   createdAt      DateTime @default(now())
+}
+
+model ShiftMoveRequest {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fromDate       DateTime // the day they're currently scheduled and want to move away from
+  toDate         DateTime // the day they want to cover instead
+  reason         String
+  status         String   @default("pending")
+  previousValues Json? // snapshot of both days' timetable values before approval, for reversal
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([status])
 }
 
 model StatsRecord {
@@ -175,6 +202,8 @@ model ShiftSwap {
   status            String   @default("pending")
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+
+  @@index([status])
 }
 
 model Notification {
@@ -188,4 +217,6 @@ model Notification {
   refId     String?
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
+
+  @@index([read, createdAt])
 }

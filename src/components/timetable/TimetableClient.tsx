@@ -12,6 +12,8 @@ export function TimetableClient({ entries: initial, employees, role, weekStart: 
   const [entries, setEntries] = useState(initial)
   const [weekStart, setWeekStart] = useState(new Date(initialWeek))
   const [uploading, setUploading] = useState(false)
+  const [showLeftFade, setShowLeftFade] = useState(false)
+  const [showRightFade, setShowRightFade] = useState(false)
   const tableRef = useRef<HTMLDivElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -22,10 +24,35 @@ export function TimetableClient({ entries: initial, employees, role, weekStart: 
     return () => ctx.revert()
   }, [entries])
 
+  // The table is wider than most phone screens and scrolls horizontally within its own
+  // container — without a visible cue, that's easy to miss, so this shows fading edges (and a
+  // one-time hint) wherever there's more content to scroll to.
+  function updateScrollFades() {
+    const el = tableRef.current
+    if (!el) return
+    setShowLeftFade(el.scrollLeft > 4)
+    setShowRightFade(el.scrollLeft + el.clientWidth < el.scrollWidth - 4)
+  }
+  useEffect(() => {
+    updateScrollFades()
+    window.addEventListener('resize', updateScrollFades)
+    return () => window.removeEventListener('resize', updateScrollFades)
+  }, [entries])
+
   async function loadWeek(date: Date) {
     const res = await fetch(`/api/timetable?week=${date.toISOString()}`)
     if (res.ok) setEntries(await res.json())
   }
+
+  // Refresh the currently-viewed week whenever the tab regains focus — otherwise a Timetable
+  // tab left open from before someone approved a swap/leave request elsewhere keeps showing
+  // stale data indefinitely, which reads as "the approval didn't actually apply."
+  useEffect(() => {
+    function refresh() { loadWeek(weekStart) }
+    window.addEventListener('focus', refresh)
+    return () => window.removeEventListener('focus', refresh)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [weekStart])
 
   function changeWeek(dir: number) {
     const d = new Date(weekStart)
@@ -155,7 +182,14 @@ export function TimetableClient({ entries: initial, employees, role, weekStart: 
         </div>
       )}
 
-      <div ref={tableRef} className="card overflow-x-auto">
+      <div className="relative">
+        {showLeftFade && (
+          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-10 z-10 rounded-l-2xl" style={{ background: 'linear-gradient(to right, var(--bg-surface), transparent)' }} />
+        )}
+        {showRightFade && (
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-10 z-10 rounded-r-2xl" style={{ background: 'linear-gradient(to left, var(--bg-surface), transparent)' }} />
+        )}
+        <div ref={tableRef} className="card overflow-x-auto" onScroll={updateScrollFades}>
         {entries.length === 0 ? (
           <div className="text-center py-16" style={{ color: 'var(--text-muted)' }}>
             <Clock className="w-12 h-12 mx-auto mb-3 opacity-30" />
@@ -230,6 +264,12 @@ export function TimetableClient({ entries: initial, employees, role, weekStart: 
               )})}
             </tbody>
           </table>
+        )}
+        </div>
+        {showRightFade && (
+          <p className="sm:hidden text-center text-xs mt-2 flex items-center justify-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
+            <ChevronLeft className="w-3 h-3" /> Swipe to see more days <ChevronRight className="w-3 h-3" />
+          </p>
         )}
       </div>
 

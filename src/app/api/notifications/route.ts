@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { pruneOldNotifications } from '@/lib/notifications'
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -12,5 +13,10 @@ export async function GET() {
     orderBy: { createdAt: 'desc' },
     take: 50,
   })
+
+  // This route is polled by every session every few minutes — a cheap, low-probability spot to
+  // opportunistically keep the notification table trimmed without needing a cron job.
+  if (Math.random() < 0.02) await pruneOldNotifications()
+
   return NextResponse.json(notifications)
 }

@@ -14,11 +14,12 @@ export async function findLeaveConflict(
   endDate: Date,
   excludeId?: string
 ): Promise<string | null> {
-  const [holidays, sicks, additionalShifts, lateArrivals] = await Promise.all([
+  const [holidays, sicks, additionalShifts, lateArrivals, shiftMoves] = await Promise.all([
     prisma.holidayRequest.findMany({ where: { userId, status: { in: ['pending', 'approved'] } } }),
     prisma.sickRequest.findMany({ where: { userId, status: { in: ['pending', 'approved'] } } }),
     prisma.additionalShiftRequest.findMany({ where: { userId, status: { in: ['pending', 'approved'] } } }),
     prisma.lateArrivalRequest.findMany({ where: { userId, status: { in: ['pending', 'approved'] } } }),
+    prisma.shiftMoveRequest.findMany({ where: { userId, status: { in: ['pending', 'approved'] } } }),
   ])
 
   for (const h of holidays) {
@@ -43,6 +44,12 @@ export async function findLeaveConflict(
     if (l.id === excludeId) continue
     if (rangesOverlap(startDate, endDate, l.date, l.date)) {
       return `You already have a ${l.status} late arrival request for this date.`
+    }
+  }
+  for (const m of shiftMoves) {
+    if (m.id === excludeId) continue
+    if (rangesOverlap(startDate, endDate, m.fromDate, m.fromDate) || rangesOverlap(startDate, endDate, m.toDate, m.toDate)) {
+      return `You already have a ${m.status} shift move request involving this date.`
     }
   }
   return null

@@ -85,7 +85,7 @@ export function ShiftSwapClient({ swaps: initial, employees, role, currentUserId
       const res = await fetch('/api/shift-swap')
       if (res.ok) setSwaps(await res.json())
     }
-    const interval = setInterval(refresh, 20000)
+    const interval = setInterval(refresh, 3 * 60 * 1000) // focus-refresh below covers the responsive case; this is just a slow safety net
     window.addEventListener('focus', refresh)
     return () => { clearInterval(interval); window.removeEventListener('focus', refresh) }
   }, [])
@@ -226,13 +226,13 @@ export function ShiftSwapClient({ swaps: initial, employees, role, currentUserId
 
             {targetId && (
               <div>
-                <label className="label">🔄 Shift {selectedTarget?.name} will cover</label>
+                <label className="label">🔄 {selectedTarget?.name}'s current shift that day</label>
                 <div className="grid grid-cols-2 gap-3">
                   {SHIFT_OPTIONS.map(opt => shiftBtn(opt.value, targetShift, () => setTargetShift(opt.value), opt))}
                 </div>
                 {swapDate && !loadingSchedule && !targetShift && (
                   <p className="text-xs mt-2 flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
-                    <AlertCircle className="w-3.5 h-3.5 shrink-0" /> {selectedTarget?.name} isn't scheduled to work that day — select the shift manually.
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" /> {selectedTarget?.name} isn't scheduled to work that day — select the shift they'd be covering instead.
                   </p>
                 )}
               </div>
@@ -254,8 +254,8 @@ export function ShiftSwapClient({ swaps: initial, employees, role, currentUserId
               <div className="p-4 rounded-xl text-sm space-y-1" style={STYLES.brandSummary}>
                 <p className="font-medium" style={{ color: 'var(--brand-text)' }}>Swap Summary</p>
                 <p style={{ color: 'var(--text-primary)' }}>📅 Date: <strong>{new Date(swapDate).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</strong></p>
-                <p style={{ color: 'var(--text-primary)' }}>You will cover: <strong className="text-amber-400">{requesterShift}</strong></p>
-                <p style={{ color: 'var(--text-primary)' }}>{selectedTarget?.name} will cover: <strong className="text-indigo-400">{targetShift}</strong></p>
+                <p style={{ color: 'var(--text-primary)' }}>You will cover: <strong className="text-amber-400">{targetShift}</strong> (currently {selectedTarget?.name}'s shift)</p>
+                <p style={{ color: 'var(--text-primary)' }}>{selectedTarget?.name} will cover: <strong className="text-indigo-400">{requesterShift}</strong> (currently your shift)</p>
               </div>
             )}
 
@@ -320,11 +320,11 @@ export function ShiftSwapClient({ swaps: initial, employees, role, currentUserId
                       </div>
                       <div className="p-2.5 rounded-lg bg-amber-500/10">
                         <p className="text-xs mb-0.5" style={{ color: 'var(--text-muted)' }}>{swap.requester?.name} covers</p>
-                        <p className="text-amber-400 font-medium text-xs">{swap.requesterShift}</p>
+                        <p className="text-amber-400 font-medium text-xs">{swap.targetShift}</p>
                       </div>
                       <div className="p-2.5 rounded-lg bg-indigo-500/10">
                         <p className="text-xs mb-0.5" style={{ color: 'var(--text-muted)' }}>{swap.target?.name} covers</p>
-                        <p className="text-indigo-400 font-medium text-xs">{swap.targetShift}</p>
+                        <p className="text-indigo-400 font-medium text-xs">{swap.requesterShift}</p>
                       </div>
                     </div>
 

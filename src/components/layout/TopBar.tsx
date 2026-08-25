@@ -55,6 +55,11 @@ const REF_ACTIONS: Record<string, {
     endpoint: id => `/api/late-arrival/${id}`,
     body: decision => ({ status: decision === 'approve' ? 'approved' : 'rejected' }),
   },
+  'shift-move': {
+    approveLabel: 'Approve', declineLabel: 'Reject',
+    endpoint: id => `/api/move-shift/${id}`,
+    body: decision => ({ status: decision === 'approve' ? 'approved' : 'rejected' }),
+  },
 }
 
 export function TopBar({ user }: TopBarProps) {
@@ -66,8 +71,16 @@ export function TopBar({ user }: TopBarProps) {
 
   useEffect(() => {
     fetchNotifications()
-    const interval = setInterval(fetchNotifications, 30000)
-    return () => clearInterval(interval)
+    // This component is mounted on every page for every logged-in session, so its poll interval
+    // is the single biggest driver of steady-state database load in the app. A window-focus
+    // listener covers the "I just got approved, let me check" case responsively, so the
+    // background interval only needs to be a slow safety net, not the primary refresh path.
+    const interval = setInterval(fetchNotifications, 3 * 60 * 1000)
+    window.addEventListener('focus', fetchNotifications)
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('focus', fetchNotifications)
+    }
   }, [])
 
   async function fetchNotifications() {
