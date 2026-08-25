@@ -66,6 +66,27 @@ html.light {
 }
 
 /* ─────────────────────────────────────────
+   THEME TRANSITION — a slow, deliberate sweep for the moment the theme
+   actually flips, layered over the fast everyday 0.2–0.3s hover transitions
+   above (this class is added just before the flip and removed once it
+   settles, so normal interactions stay snappy the rest of the time).
+───────────────────────────────────────── */
+html.theme-transitioning, html.theme-transitioning * {
+  transition: background-color 0.9s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.9s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.7s cubic-bezier(0.4, 0, 0.2, 1),
+              fill 0.7s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.theme-sweep-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* ─────────────────────────────────────────
    COMPONENT CLASSES
 ───────────────────────────────────────── */
 @layer components {
