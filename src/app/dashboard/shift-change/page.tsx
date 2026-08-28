@@ -1,8 +1,8 @@
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { authOptions } from '@/modules/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import { ShiftChangeClient } from '@/components/shiftchange/ShiftChangeClient'
+import { ShiftChangeClient } from '@/modules/shift-management'
 
 export default async function ShiftChangePage() {
   const session = await getServerSession(authOptions)

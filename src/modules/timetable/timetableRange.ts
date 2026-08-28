@@ -1,5 +1,5 @@
-import { prisma } from './prisma'
-import { getWeekStart, getDayKey } from './utils'
+import { prisma } from '@/lib/prisma'
+import { getWeekStart, getDayKey } from '@/lib/utils'
 import { getEffectiveDayValue } from './timetableResolve'
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000

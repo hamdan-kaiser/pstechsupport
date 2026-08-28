@@ -1,8 +1,8 @@
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { authOptions } from '@/modules/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import { MoveShiftClient } from '@/components/moveshift/MoveShiftClient'
+import { MoveShiftClient } from '@/modules/shift-management'
 
 export default async function MoveShiftPage() {
   const session = await getServerSession(authOptions)

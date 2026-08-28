@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer'
-import { prisma } from './prisma'
+import { prisma } from '@/lib/prisma'
 
 const transporter = process.env.SMTP_HOST
   ? nodemailer.createTransport({

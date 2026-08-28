@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { authOptions } from '@/modules/auth'
 import { prisma } from '@/lib/prisma'
-import { notifyAllAdmins } from '@/lib/notifications'
+import { notifyAllAdmins } from '@/modules/notifications'
 import { getDayKey } from '@/lib/utils'
-import { getEffectiveDayValue } from '@/lib/timetableResolve'
-import { findLeaveConflict } from '@/lib/leaveConflict'
+import { getEffectiveDayValue } from '@/modules/timetable'
+import { findLeaveConflict } from '@/modules/leave-attendance'
 
 export async function GET() {
   const session = await getServerSession(authOptions)

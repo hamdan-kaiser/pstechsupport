@@ -1,10 +1,10 @@
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { authOptions } from '@/modules/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import { SuddenLeaveClient } from '@/components/suddenleave/SuddenLeaveClient'
+import { SuddenLeaveClient } from '@/modules/leave-attendance/components/SuddenLeaveClient'
 import { getDayKey, getShiftEndTime } from '@/lib/utils'
-import { getEffectiveDayValue } from '@/lib/timetableResolve'
+import { getEffectiveDayValue } from '@/modules/timetable'
 
 export default async function SuddenLeavePage() {
   const session = await getServerSession(authOptions)

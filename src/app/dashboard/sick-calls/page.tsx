@@ -1,8 +1,8 @@
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { authOptions } from '@/modules/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import { SickCallClient } from '@/components/sick/SickCallClient'
+import { SickCallClient } from '@/modules/leave-attendance/components/SickCallClient'
 
 export default async function SickCallsPage() {
   const session = await getServerSession(authOptions)

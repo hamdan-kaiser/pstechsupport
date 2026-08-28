@@ -1,11 +1,11 @@
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { authOptions } from '@/modules/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import { EmployeesClient } from '@/components/admin/EmployeesClient'
+import { EmployeesClient } from '@/modules/employees'
 import { getWeekStart, getTodayDayKey, deriveRowStatus } from '@/lib/utils'
-import { getApprovedSickDaysForUsers } from '@/lib/sickUsage'
-import { getEffectiveTimetableForWeek } from '@/lib/timetableResolve'
+import { getApprovedSickDaysForUsers } from '@/modules/leave-attendance'
+import { getEffectiveTimetableForWeek } from '@/modules/timetable'
 
 export default async function EmployeesPage() {
   const session = await getServerSession(authOptions)

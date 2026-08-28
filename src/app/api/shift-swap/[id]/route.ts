@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { authOptions } from '@/modules/auth'
 import { prisma } from '@/lib/prisma'
-import { createNotification, notifyAllAdmins, notifyAllEmployees } from '@/lib/notifications'
-import { markTimetableRange } from '@/lib/timetableRange'
+import { createNotification, notifyAllAdmins, notifyAllEmployees } from '@/modules/notifications'
+import { markTimetableRange } from '@/modules/timetable'
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)

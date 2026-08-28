@@ -1,4 +1,4 @@
-import { prisma } from './prisma'
+import { prisma } from '@/lib/prisma'
 
 function daysOverlapInMonth(start: Date, end: Date, month: number, year: number): number {
   const monthStart = new Date(Date.UTC(year, month - 1, 1))

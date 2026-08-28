@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { authOptions } from '@/modules/auth'
 import { prisma } from '@/lib/prisma'
-import { createNotification } from '@/lib/notifications'
-import { findLeaveConflict } from '@/lib/leaveConflict'
-import { snapshotTimetableRange, markTimetableRange } from '@/lib/timetableRange'
+import { createNotification } from '@/modules/notifications'
+import { findLeaveConflict } from '@/modules/leave-attendance'
+import { snapshotTimetableRange, markTimetableRange } from '@/modules/timetable'
 
 export async function GET() {
   const session = await getServerSession(authOptions)

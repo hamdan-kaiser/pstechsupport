@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { verifyMagicKey } from '@/modules/auth'
 
 export async function POST(req: Request) {
   const { email, magicKey } = await req.json()
-  const user = await prisma.user.findUnique({ where: { email } })
-  if (!user) return NextResponse.json({ error: 'No account found with that email' }, { status: 404 })
-  if (user.magicKey !== magicKey) return NextResponse.json({ error: 'Incorrect magic key' }, { status: 401 })
-  return NextResponse.json({ valid: true, userId: user.id })
+  const result = await verifyMagicKey(email, magicKey)
+  if ('error' in result) return NextResponse.json({ error: result.error }, { status: result.status })
+  return NextResponse.json(result)
 }

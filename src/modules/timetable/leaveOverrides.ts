@@ -1,5 +1,5 @@
-import { prisma } from './prisma'
-import { DAYS } from './utils'
+import { prisma } from '@/lib/prisma'
+import { DAYS } from '@/lib/utils'
 
 /** For a given user/week, returns which days must show "Holiday" or "Sick Off" because of an
  *  approved request covering that date — used to stop a timetable re-upload from silently

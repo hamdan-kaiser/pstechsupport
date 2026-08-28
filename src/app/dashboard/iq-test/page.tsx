@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { authOptions } from '@/modules/auth'
 import { prisma } from '@/lib/prisma'
-import { IqTestClient } from '@/components/iqgame/IqTestClient'
+import { IqTestClient } from '@/modules/iq-game'
 
 export default async function IqTestPage() {
   const session = await getServerSession(authOptions)

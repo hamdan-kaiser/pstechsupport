@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { authOptions } from '@/modules/auth'
 import { prisma } from '@/lib/prisma'
 import { getWeekStart, DAYS } from '@/lib/utils'
-import { notifyAllEmployees } from '@/lib/notifications'
-import { getLeaveOverridesForWeek } from '@/lib/leaveOverrides'
-import { getEffectiveTimetableForWeek } from '@/lib/timetableResolve'
+import { notifyAllEmployees } from '@/modules/notifications'
+import { getLeaveOverridesForWeek } from '@/modules/timetable'
+import { getEffectiveTimetableForWeek } from '@/modules/timetable'
 
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions)

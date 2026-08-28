@@ -1,8 +1,8 @@
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { authOptions } from '@/modules/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import { HolidaysClient } from '@/components/holidays/HolidaysClient'
+import { HolidaysClient } from '@/modules/leave-attendance/components/HolidaysClient'
 
 export default async function HolidaysPage() {
   const session = await getServerSession(authOptions)

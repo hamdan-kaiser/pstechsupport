@@ -1,4 +1,4 @@
-import { prisma } from './prisma'
+import { prisma } from '@/lib/prisma'
 
 /** refType marks a notification as actionable directly from the notification panel:
  *  'holiday' | 'sick' | 'additional-shift' | 'early-leave' | 'late-arrival' -> admin approves/rejects via that request's id

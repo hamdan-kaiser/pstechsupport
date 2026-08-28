@@ -1,5 +1,5 @@
-import { prisma } from './prisma'
-import { DAYS, getWeekStart } from './utils'
+import { prisma } from '@/lib/prisma'
+import { DAYS, getWeekStart } from '@/lib/utils'
 
 export interface ResolvedTimetableEntry {
   id: string

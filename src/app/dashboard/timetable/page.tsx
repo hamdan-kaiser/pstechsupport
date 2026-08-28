@@ -1,9 +1,9 @@
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { authOptions } from '@/modules/auth'
 import { prisma } from '@/lib/prisma'
-import { TimetableClient } from '@/components/timetable/TimetableClient'
+import { TimetableClient } from '@/modules/timetable/components/TimetableClient'
 import { getWeekStart } from '@/lib/utils'
-import { getEffectiveTimetableForWeek } from '@/lib/timetableResolve'
+import { getEffectiveTimetableForWeek } from '@/modules/timetable'
 
 export default async function TimetablePage() {
   const session = await getServerSession(authOptions)

@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { authOptions } from '@/modules/auth'
 import { prisma } from '@/lib/prisma'
-import { notifyAllAdmins } from '@/lib/notifications'
-import { notifyAdminsByEmail } from '@/lib/email'
+import { notifyAllAdmins, notifyAdminsByEmail } from '@/modules/notifications'
 import { getDayKey, getShiftEndTime } from '@/lib/utils'
-import { getEffectiveDayValue } from '@/lib/timetableResolve'
+import { getEffectiveDayValue } from '@/modules/timetable'
 
 export async function GET() {
   const session = await getServerSession(authOptions)

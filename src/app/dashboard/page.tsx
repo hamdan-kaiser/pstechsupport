@@ -1,9 +1,9 @@
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { authOptions } from '@/modules/auth'
 import { prisma } from '@/lib/prisma'
-import { DashboardClient } from '@/components/dashboard/DashboardClient'
+import { DashboardClient } from '@/modules/dashboard'
 import { getWeekStart } from '@/lib/utils'
-import { getEffectiveTimetableForWeek } from '@/lib/timetableResolve'
+import { getEffectiveTimetableForWeek } from '@/modules/timetable'
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)

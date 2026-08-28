@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import toast from 'react-hot-toast'
 import { Brain, Trophy, Clock, RotateCcw, Sparkles, ArrowLeft } from 'lucide-react'
-import { generateGame, type GeneratedQuestion } from '@/lib/iqGame/generator'
+import { generateGame, type GeneratedQuestion } from '../generator'
 import { cn, avatarColor } from '@/lib/utils'
 
 const QUESTION_COUNT = 20

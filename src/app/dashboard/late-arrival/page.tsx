@@ -1,10 +1,10 @@
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { authOptions } from '@/modules/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import { LateArrivalClient } from '@/components/latearrival/LateArrivalClient'
+import { LateArrivalClient } from '@/modules/leave-attendance/components/LateArrivalClient'
 import { getDayKey, getShiftStartTime } from '@/lib/utils'
-import { getEffectiveDayValue } from '@/lib/timetableResolve'
+import { getEffectiveDayValue } from '@/modules/timetable'
 
 export default async function LateArrivalPage() {
   const session = await getServerSession(authOptions)

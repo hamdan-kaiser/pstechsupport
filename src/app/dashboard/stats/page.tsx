@@ -1,9 +1,9 @@
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { authOptions } from '@/modules/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import { StatsClient } from '@/components/stats/StatsClient'
-import { getMonthlyLeaveSummaryForUsers } from '@/lib/monthlyLeave'
+import { StatsClient } from '@/modules/leaderboard'
+import { getMonthlyLeaveSummaryForUsers } from '@/modules/leave-attendance'
 
 export default async function StatsPage() {
   const session = await getServerSession(authOptions)

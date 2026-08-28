@@ -1,4 +1,4 @@
-import { prisma } from './prisma'
+import { prisma } from '@/lib/prisma'
 
 /** Total approved sick days per user, for admin visibility on the Employees list. */
 export async function getApprovedSickDaysForUsers(userIds: string[]): Promise<Record<string, number>> {

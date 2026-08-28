@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { authOptions } from '@/modules/auth'
 import { prisma } from '@/lib/prisma'
-import { createNotification, notifyAllAdmins } from '@/lib/notifications'
-import { notifyAdminsByEmail } from '@/lib/email'
+import { createNotification, notifyAllAdmins, notifyAdminsByEmail } from '@/modules/notifications'
 import { getDayKey, getShiftStartTime, buildLateArrivalValue } from '@/lib/utils'
-import { getEffectiveDayValue } from '@/lib/timetableResolve'
-import { findLeaveConflict } from '@/lib/leaveConflict'
-import { snapshotTimetableRange, markTimetableRange } from '@/lib/timetableRange'
+import { getEffectiveDayValue } from '@/modules/timetable'
+import { findLeaveConflict } from '@/modules/leave-attendance'
+import { snapshotTimetableRange, markTimetableRange } from '@/modules/timetable'
 
 export async function GET() {
   const session = await getServerSession(authOptions)
