@@ -211,7 +211,11 @@ export function Sidebar({ role }: { role: string }) {
           })}
         </nav>
 
-        <div className="p-4 border-t" style={{ borderColor: 'var(--border-base)' }}>
+        <div className="p-4 border-t space-y-3" style={{ borderColor: 'var(--border-base)' }}>
+          <div className="hud-text flex items-center gap-1.5 px-1 select-none">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+            SYS://ONLINE
+          </div>
           <button
             onClick={() => signOut({ callbackUrl: '/login', redirect: true })}
             onMouseEnter={handleLinkEnter} onMouseLeave={handleLinkLeave}

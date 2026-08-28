@@ -28,17 +28,6 @@
 }
 
 /* ─────────────────────────────────────────
-   DARK MODE — randomized page background
-   One of 3 colors, chosen at random each time dark mode is switched on (see
-   appStore.ts's toggleTheme / layout.tsx's bootstrap script for the JS side).
-   Only --bg-base changes — cards, sidebar, and text stay on their existing,
-   already-contrast-checked slate tones, so legibility is never at risk.
-───────────────────────────────────────── */
-html.dark[data-dark-bg="0"] { --bg-base: #2b094d; }
-html.dark[data-dark-bg="1"] { --bg-base: #174309; }
-html.dark[data-dark-bg="2"] { --bg-base: #2d2424; }
-
-/* ─────────────────────────────────────────
    CSS VARIABLES — Light
 ───────────────────────────────────────── */
 html.light {
@@ -175,11 +164,20 @@ html.theme-transitioning, html.theme-transitioning * {
   .bg-surface  { background-color: var(--bg-surface); }
   .bg-elevated { background-color: var(--bg-elevated); }
 
-  .badge-pending  { @apply bg-amber-100  text-amber-800  dark:bg-amber-500/20  dark:text-amber-400  text-xs font-medium px-2.5 py-1 rounded-full; }
-  .badge-approved { @apply bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-400 text-xs font-medium px-2.5 py-1 rounded-full; }
-  .badge-rejected { @apply bg-red-100    text-red-800    dark:bg-red-500/20    dark:text-red-400    text-xs font-medium px-2.5 py-1 rounded-full; }
-  .badge-day      { @apply bg-amber-100  text-amber-800  dark:bg-amber-500/20  dark:text-amber-300  text-xs font-medium px-2.5 py-1 rounded-full; }
-  .badge-night    { @apply bg-indigo-100 text-indigo-800 dark:bg-indigo-500/20 dark:text-indigo-300 text-xs font-medium px-2.5 py-1 rounded-full; }
+  .badge-pending  { @apply bg-amber-100  text-amber-800  dark:bg-amber-500/20  dark:text-amber-400  text-xs font-mono uppercase tracking-wide px-2.5 py-1 rounded-full; }
+  .badge-approved { @apply bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-400 text-xs font-mono uppercase tracking-wide px-2.5 py-1 rounded-full; }
+  .badge-rejected { @apply bg-red-100    text-red-800    dark:bg-red-500/20    dark:text-red-400    text-xs font-mono uppercase tracking-wide px-2.5 py-1 rounded-full; }
+  .badge-day      { @apply bg-amber-100  text-amber-800  dark:bg-amber-500/20  dark:text-amber-300  text-xs font-mono uppercase tracking-wide px-2.5 py-1 rounded-full; }
+  .badge-night    { @apply bg-indigo-100 text-indigo-800 dark:bg-indigo-500/20 dark:text-indigo-300 text-xs font-mono uppercase tracking-wide px-2.5 py-1 rounded-full; }
+
+  /* A faint, ambient scanline texture for the authenticated app shell — the same motif as the
+     login page's, at a much lower opacity so it reads as texture, not noise, over dense content. */
+  .techy-scanlines {
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(34,211,238,0.025) 2px, rgba(34,211,238,0.025) 4px);
+  }
+
+  /* Small monospace "system status" readout — echoes the login page's HUD text in the app shell */
+  .hud-text { @apply font-mono text-[10px] tracking-wider; color: rgba(34,211,238,0.55); }
 }
 
 /* ─────────────────────────────────────────
