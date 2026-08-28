@@ -11,15 +11,18 @@ const SWEEP_TO_LIGHT = 'radial-gradient(circle at var(--sweep-x) var(--sweep-y),
 const SWEEP_TO_DARK = 'radial-gradient(circle at var(--sweep-x) var(--sweep-y), rgba(249,115,22,0.5), rgba(30,27,75,0.55) 50%, transparent 78%)'
 
 export function ThemeToggle() {
-  const { theme, toggleTheme } = useAppStore()
+  const { theme, darkBgIndex, toggleTheme } = useAppStore()
   const btnRef = useRef<HTMLButtonElement>(null)
   const iconRef = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
 
-  // Apply persisted theme on mount
+  // Apply persisted theme (and, in dark mode, its randomly-chosen background) on mount — the
+  // inline bootstrap script in layout.tsx already did this before hydration to avoid a flash,
+  // this just keeps the DOM in sync with whatever Zustand ends up hydrating.
   useEffect(() => {
     document.documentElement.classList.remove('dark', 'light')
     document.documentElement.classList.add(theme)
+    if (theme === 'dark') document.documentElement.setAttribute('data-dark-bg', String(darkBgIndex))
   }, [])
 
   function handleToggle() {

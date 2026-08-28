@@ -28,6 +28,17 @@
 }
 
 /* ─────────────────────────────────────────
+   DARK MODE — randomized page background
+   One of 3 colors, chosen at random each time dark mode is switched on (see
+   appStore.ts's toggleTheme / layout.tsx's bootstrap script for the JS side).
+   Only --bg-base changes — cards, sidebar, and text stay on their existing,
+   already-contrast-checked slate tones, so legibility is never at risk.
+───────────────────────────────────────── */
+html.dark[data-dark-bg="0"] { --bg-base: #2b094d; }
+html.dark[data-dark-bg="1"] { --bg-base: #174309; }
+html.dark[data-dark-bg="2"] { --bg-base: #2d2424; }
+
+/* ─────────────────────────────────────────
    CSS VARIABLES — Light
 ───────────────────────────────────────── */
 html.light {
