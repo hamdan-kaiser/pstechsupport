@@ -1,6 +1,15 @@
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 
+// The one account with exclusive authority to grant/change admin, employee, or viewer access —
+// no other admin can assign roles, and this account's own role can never be changed by anyone
+// (including itself), so the portal can never end up with no one able to grant access.
+export const SUPER_ADMIN_EMAIL = 'hamdan.kaiser@paymentsave.co.uk'
+
+export function isSuperAdmin(email: string | null | undefined): boolean {
+  return !!email && email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()
+}
+
 export async function verifyMagicKey(email: string, magicKey: string) {
   const user = await prisma.user.findUnique({ where: { email } })
   if (!user) return { error: 'No account found with that email', status: 404 as const }

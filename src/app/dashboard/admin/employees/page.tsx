@@ -1,5 +1,5 @@
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/modules/auth'
+import { authOptions, isSuperAdmin } from '@/modules/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { EmployeesClient } from '@/modules/employees'
@@ -27,8 +27,8 @@ export default async function EmployeesPage() {
   const employeesWithTodayShift = employees.map(emp => {
     const entry = timetableEntries.find(t => t.userId === emp.id) as any
     const todayValue = entry ? entry[todayKey] : null
-    return { ...emp, sickDays: sickDaysByUser[emp.id] ?? 0, todayShift: deriveRowStatus(todayValue) }
+    return { ...emp, sickDays: sickDaysByUser[emp.id] ?? 0, todayShift: deriveRowStatus(todayValue), isSuperAdminAccount: isSuperAdmin(emp.email) }
   })
 
-  return <EmployeesClient employees={employeesWithTodayShift} />
+  return <EmployeesClient employees={employeesWithTodayShift} isSuperAdmin={isSuperAdmin((session!.user as any).email)} />
 }

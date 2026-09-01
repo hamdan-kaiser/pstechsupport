@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import toast from 'react-hot-toast'
-import { Plus, X, Check, Trash2, Edit2, Sun, Moon, Coffee, Eye, EyeOff, KeyRound, Download, Upload } from 'lucide-react'
+import { Plus, X, Check, Trash2, Edit2, Sun, Moon, Coffee, Eye, EyeOff, KeyRound, Download, Upload, Lock } from 'lucide-react'
 import { formatDate, roleBadge, shiftBadge, avatarColor } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import { COLOR } from '@/lib/design'
@@ -10,7 +10,7 @@ import * as XLSX from 'xlsx'
 
 const EMPTY_FORM = { name: '', email: '', password: '', role: 'employee', shift: 'day', magicKey: '0000', totalHolidays: 28, usedHolidays: 0 }
 
-export function EmployeesClient({ employees: initial }: { employees: any[] }) {
+export function EmployeesClient({ employees: initial, isSuperAdmin }: { employees: any[]; isSuperAdmin: boolean }) {
   const [employees, setEmployees] = useState(initial)
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<any>(null)
@@ -102,6 +102,9 @@ export function EmployeesClient({ employees: initial }: { employees: any[] }) {
   }
 
   const isFormOpen = showForm || !!editing
+  // Only the super admin can assign roles, and never for the super admin's own account (that
+  // would risk permanently locking the portal out of anyone able to grant admin/viewer access).
+  const canEditRole = isSuperAdmin && !(editing && editing.isSuperAdminAccount)
 
   // ── Download employees as xlsx ──
   function handleDownload() {
@@ -212,12 +215,25 @@ export function EmployeesClient({ employees: initial }: { employees: any[] }) {
               </div>
             </div>
             <div>
-              <label className="label">Role</label>
-              <select className="input" value={form.role} onChange={e => setForm((f: any) => ({ ...f, role: e.target.value }))}>
+              <label className="label flex items-center gap-1.5">
+                Role
+                {!canEditRole && <Lock className="w-3 h-3" style={{ color: 'var(--text-muted)' }} />}
+              </label>
+              <select
+                className="input disabled:opacity-60 disabled:cursor-not-allowed"
+                value={form.role}
+                disabled={!canEditRole}
+                onChange={e => setForm((f: any) => ({ ...f, role: e.target.value }))}
+              >
                 <option value="employee">Employee</option>
                 <option value="admin">Admin</option>
                 <option value="viewer">Viewer (Read-only)</option>
               </select>
+              {!canEditRole && (
+                <p className="text-xs mt-1.5" style={{ color: 'var(--text-muted)' }}>
+                  {editing?.isSuperAdminAccount ? 'The super admin\'s role is permanently locked.' : 'Only the super admin can change roles.'}
+                </p>
+              )}
             </div>
             <div>
               <label className="label">Shift</label>
@@ -330,11 +346,13 @@ export function EmployeesClient({ employees: initial }: { employees: any[] }) {
                       onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.backgroundColor = '' }}>
                       <Edit2 className="w-4 h-4" />
                     </button>
-                    <button onClick={() => handleDelete(emp.id, emp.name)} className="p-1.5 rounded-lg transition-colors" style={{ color: 'var(--text-muted)' }}
-                      onMouseEnter={e => { e.currentTarget.style.color = COLOR.errorRed; e.currentTarget.style.backgroundColor = COLOR.errorRedBg }}
-                      onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.backgroundColor = '' }}>
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    {!emp.isSuperAdminAccount && (
+                      <button onClick={() => handleDelete(emp.id, emp.name)} className="p-1.5 rounded-lg transition-colors" style={{ color: 'var(--text-muted)' }}
+                        onMouseEnter={e => { e.currentTarget.style.color = COLOR.errorRed; e.currentTarget.style.backgroundColor = COLOR.errorRedBg }}
+                        onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.backgroundColor = '' }}>
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>

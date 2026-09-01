@@ -3,4 +3,4 @@
 // only import from here, not reach into the files below directly.
 
 export { authOptions } from './authOptions'
-export { verifyMagicKey, resetPassword } from './service'
+export { verifyMagicKey, resetPassword, isSuperAdmin, SUPER_ADMIN_EMAIL } from './service'
